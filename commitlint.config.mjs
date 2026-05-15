@@ -1,5 +1,5 @@
 /**
- * commitlint.config.js — AporiaPolis
+ * commitlint.config.mjs — AporiaPolis
  *
  * Enforces Conventional Commits with the scope list of the project.
  * Triggered by:
@@ -9,7 +9,7 @@
  * Adding a new scope? Update both this file and CLAUDE.md / 10_conventions.md.
  */
 
-module.exports = {
+export default {
   extends: ['@commitlint/config-conventional'],
   rules: {
     'type-enum': [

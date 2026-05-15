@@ -34,6 +34,7 @@ module.exports = {
       'always',
       [
         // Transverse
+        'adr',
         'infra',
         'api',
         'mcp',

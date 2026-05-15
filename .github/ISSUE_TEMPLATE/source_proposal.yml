@@ -1,0 +1,86 @@
+name: "Source proposal"
+description: "Suggérer une nouvelle source ou une nouvelle sous-question."
+title: "[SOURCE] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > Toute source publique, sérieuse et pertinente peut être proposée. La décision d'ingestion est conditionnée par le passage du **gate 2 — source contract** (cf. ADR-0023 et `docs/sources/`).
+
+  - type: dropdown
+    id: nature
+    attributes:
+      label: Nature de la proposition
+      options:
+        - "Nouvelle source de données"
+        - "Nouvelle sous-question pour un dossier existant"
+        - "Nouveau dossier (parking lot probable)"
+    validations:
+      required: true
+
+  - type: input
+    id: nom
+    attributes:
+      label: Nom / sigle
+      description: Sigle court pour une source (ex. ARCOM, HATVP). Titre court pour une sous-question.
+    validations:
+      required: true
+
+  - type: input
+    id: url
+    attributes:
+      label: URL principale
+      placeholder: "https://..."
+    validations:
+      required: false
+
+  - type: dropdown
+    id: type_acces
+    attributes:
+      label: Type d'accès (si source)
+      options:
+        - "API REST"
+        - "Scraping web (sites publics)"
+        - "Fichiers publiés (CSV, JSON, XML, SDMX)"
+        - "Export BDD"
+        - "Big data (Common Crawl, etc.)"
+        - "Non applicable (proposition de sous-question / dossier)"
+    validations:
+      required: true
+
+  - type: input
+    id: licence
+    attributes:
+      label: Licence
+      description: Etalab, ODbL, CC, restrictions particulières…
+      placeholder: "Etalab 2.0"
+    validations:
+      required: false
+
+  - type: textarea
+    id: pertinence
+    attributes:
+      label: En quoi est-ce pertinent ?
+      description: Pour quel dossier, quelle sous-question, quel test de réalité ? Quelle valeur ajoutée vs sources existantes ?
+    validations:
+      required: true
+
+  - type: textarea
+    id: limites
+    attributes:
+      label: Limites connues
+      description: Fréquence d'actualisation, biais connus, conditions d'usage, dépendance à un acteur.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: gate
+    attributes:
+      label: Pré-requis gate 2 source
+      description: Vérification rapide avant ingestion.
+      options:
+        - label: "Licence compatible (Etalab, ODbL, CC, ou autorisation explicite)"
+        - label: "Schéma stable ou évolution gérée"
+        - label: "Pas de contenu de presse en zone bronze persistante (cf. ADR-0022)"
+        - label: "robots.txt / ai.txt respectés si scraping"

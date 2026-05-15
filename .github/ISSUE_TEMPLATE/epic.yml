@@ -1,0 +1,127 @@
+name: "Epic"
+description: "Chantier majeur regroupant plusieurs stories."
+title: "[EPIC] "
+type: "Epic"
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > **Epic** = un chantier majeur, plusieurs stories, plusieurs semaines.
+        > La sémantique critique (objectif, stories incluses, dépendances, gate) doit vivre aussi dans le Project, pas seulement ici.
+
+  - type: textarea
+    id: objectif
+    attributes:
+      label: Objectif
+      description: Le résultat attendu de cet epic, en 2-4 phrases. Pas de description du « comment ».
+      placeholder: "À la fin de cet epic, ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: critere_succes
+    attributes:
+      label: Critère de succès global
+      description: Comment saura-t-on que l'epic est terminé ? (observable, vérifiable)
+      placeholder: "L'epic est terminé quand ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: stories
+    attributes:
+      label: Stories incluses
+      description: Liste des stories. Ajoutées au fur et à mesure de la création des issues `story`.
+      value: |
+        - [ ] #
+        - [ ] #
+    validations:
+      required: false
+
+  - type: textarea
+    id: dependances
+    attributes:
+      label: Dépendances
+      description: Autres epics, gates ou ADR qui doivent être franchis avant.
+      placeholder: "Dépend de #N (epic X) — voir ADR-00YY"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: gate
+    attributes:
+      label: Gate associé
+      description: Si une story de cet epic est bloquée par un gate.
+      options:
+        - "none"
+        - "juridique"
+        - "source"
+        - "publication"
+      default: 0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: stream
+    attributes:
+      label: Stream
+      options:
+        - "product"
+        - "cert"
+        - "compliance"
+        - "rd"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Phase
+      options:
+        - "t1"
+        - "t2"
+        - "t3"
+        - "t4"
+        - "bonus"
+        - "parking"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priorité
+      options:
+        - "P0"
+        - "P1"
+        - "P2"
+        - "P3"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Risque
+      options:
+        - "low"
+        - "medium"
+        - "high"
+        - "critical"
+    validations:
+      required: true
+
+  - type: textarea
+    id: risques
+    attributes:
+      label: Risques identifiés
+      description: Risques techniques, juridiques, méthodologiques, calendaires.
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        *Cet epic sera ajouté automatiquement au Project public via l'auto-add workflow. Les custom fields (stream, priority, phase, risk, effort, dossier, gate) du Project sont la source d'autorité pour le pilotage.*

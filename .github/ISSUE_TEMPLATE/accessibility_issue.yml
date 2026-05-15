@@ -1,0 +1,75 @@
+name: "Accessibility issue"
+description: "Signaler un défaut d'accessibilité (RGAA / WCAG)."
+title: "[A11Y] "
+labels: ["accessibility"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > L'accessibilité (RGAA AA / WCAG 2.1 AA) est traitée *dès la conception* du design system. Tout défaut signalé est traité en priorité avant la prochaine publication.
+
+  - type: input
+    id: page
+    attributes:
+      label: Page / composant concerné
+      placeholder: "https://aporiapolis.org/dossiers/medias — composant CoherenceMap"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: critere_rgaa
+    attributes:
+      label: Critère RGAA / WCAG le plus proche (si connu)
+      options:
+        - "Inconnu / pas sûr"
+        - "1 — Images (alt, contexte)"
+        - "2 — Cadres (frame title)"
+        - "3 — Couleurs (contraste, information par la couleur)"
+        - "4 — Multimédia (transcript, sous-titres)"
+        - "5 — Tableaux (en-têtes, structure)"
+        - "6 — Liens (intitulé)"
+        - "7 — Scripts (focus, ARIA, alternative)"
+        - "8 — Éléments obligatoires (langue, doctype)"
+        - "9 — Structuration de l'information (headings)"
+        - "10 — Présentation (CSS, zoom, focus visible)"
+        - "11 — Formulaires (label, erreur, validation)"
+        - "12 — Navigation (skip-link, ordre tab, landmarks)"
+        - "13 — Consultation (timing, mouvements, cible)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description du défaut
+      description: Ce qui ne marche pas et en quoi c'est bloquant.
+    validations:
+      required: true
+
+  - type: textarea
+    id: technologie
+    attributes:
+      label: Technologie d'assistance utilisée
+      description: Lecteur d'écran (NVDA, JAWS, VoiceOver), navigation clavier seule, zoom 200/400 %, mode contraste élevé, etc.
+      placeholder: "NVDA + Firefox sur Windows 11"
+    validations:
+      required: false
+
+  - type: textarea
+    id: capture
+    attributes:
+      label: Capture ou enregistrement
+      description: Joindre une capture ou une courte vidéo si possible.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: severite
+    attributes:
+      label: Sévérité estimée
+      options:
+        - "Mineur — gêne ponctuelle"
+        - "Modéré — fonctionnalité partiellement utilisable"
+        - "Bloquant — fonctionnalité inutilisable avec cette technologie d'assistance"
+    validations:
+      required: true

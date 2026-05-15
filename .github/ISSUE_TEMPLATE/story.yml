@@ -1,0 +1,159 @@
+name: "Story"
+description: "Livrable concret avec valeur utilisateur ou technique identifiable."
+title: "[STORY] "
+type: "Story"
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > **Story** = un livrable concret, terminable en quelques jours à 2 semaines, avec des critères d'acceptance observables.
+
+  - type: input
+    id: parent_epic
+    attributes:
+      label: Parent epic
+      description: Numéro de l'issue epic parent (ex. #12).
+      placeholder: "#"
+    validations:
+      required: true
+
+  - type: textarea
+    id: pourquoi
+    attributes:
+      label: Pourquoi
+      description: Contexte métier ou technique. Quelle valeur cette story produit-elle ?
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance
+      description: Critères observables et vérifiables. Une checklist est encouragée.
+      value: |
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: Tasks
+      description: Découpage technique en sous-tâches (3-8 maximum).
+      value: |
+        - [ ]
+        - [ ]
+    validations:
+      required: false
+
+  - type: dropdown
+    id: gate
+    attributes:
+      label: Gate associé
+      description: Cette story franchit-elle un gate transverse ?
+      options:
+        - "none"
+        - "juridique"
+        - "source"
+        - "publication"
+      default: 0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: stream
+    attributes:
+      label: Stream
+      options:
+        - "product"
+        - "cert"
+        - "compliance"
+        - "rd"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Phase
+      options:
+        - "t1"
+        - "t2"
+        - "t3"
+        - "t4"
+        - "bonus"
+        - "parking"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priorité
+      options:
+        - "P0"
+        - "P1"
+        - "P2"
+        - "P3"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Risque
+      options:
+        - "low"
+        - "medium"
+        - "high"
+        - "critical"
+    validations:
+      required: true
+
+  - type: input
+    id: effort
+    attributes:
+      label: Effort estimé (heures)
+      description: Estimation grossière en heures (ordre de grandeur).
+      placeholder: "8"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: dossier
+    attributes:
+      label: Dossier concerné
+      options:
+        - "none"
+        - "medias"
+        - "dette"
+        - "meta-ia"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: ia_trace
+    attributes:
+      label: Assistance IA prévue
+      description: Cocher les outils prévus. À reporter dans le footer `IA-assistance:` du commit final.
+      options:
+        - label: "Claude Code (édition agentique)"
+        - label: "Cowork (alignement, rédaction)"
+        - label: "Codex (complétion)"
+        - label: "Aucune assistance prévue"
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Liens utiles, références à des ADR ou source cards, edge cases connus.
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        *Le footer obligatoire du commit final : `IA-assistance: <outil>` puis `Validation: sam`.*

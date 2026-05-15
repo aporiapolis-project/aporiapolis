@@ -1,0 +1,75 @@
+name: "Methodology concern"
+description: "Signaler un biais, une erreur factuelle, ou une fragilité méthodologique."
+title: "[METHODO] "
+labels: ["methodology-concern"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > Ce template est **ouvert au public, attendu, et bienvenu**.
+        >
+        > Le projet est piloté avec l'exigence du *désaccord argumenté*. Si vous identifiez un biais ou une erreur, ce template existe pour ça. Toute remontée sera examinée publiquement et : (a) intégrée si pertinente, (b) réfutée publiquement avec justification, ou (c) discutée par le comité de relecture.
+
+  - type: input
+    id: cible
+    attributes:
+      label: Sur quoi porte la remontée ?
+      description: Page, dossier, sous-question, source, méthodologie, indicateur, test de réalité, etc.
+      placeholder: "dossiers/medias — sous-question concentration-capitalistique"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: nature
+    attributes:
+      label: Nature de la remontée
+      options:
+        - "Biais méthodologique (choix de cadrage, de mesure, de pondération)"
+        - "Erreur factuelle (chiffre, citation, attribution incorrects)"
+        - "Source manquante (un fait avancé sans source ou avec source faible)"
+        - "Classification de source contestée (fiabilité, indépendance)"
+        - "Lecture orientée (interprétation qui méritait débat)"
+        - "Cadre légal / éthique (RGPD, droit voisin, accessibilité)"
+        - "Autre"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description précise
+      description: Quoi, où, et en quoi c'est problématique. Soyez concret.
+    validations:
+      required: true
+
+  - type: textarea
+    id: sources
+    attributes:
+      label: Sources à l'appui
+      description: Liens, références, captures. Plus c'est sourcé, plus c'est actionnable.
+    validations:
+      required: false
+
+  - type: textarea
+    id: proposition
+    attributes:
+      label: Proposition de correction ou de débat
+      description: Quelle serait, selon vous, la formulation, la mesure, ou le traitement plus juste ?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: visibility
+    attributes:
+      label: Visibilité de votre identité
+      options:
+        - "Identité publique acceptée (le pseudo GitHub me convient)"
+        - "Anonymat demandé pour la réponse publique"
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        *Cette issue sera traitée selon la politique de modération publiée sur `/legal/moderation`. Une réponse publique sera produite, qu'elle intègre ou réfute la remontée.*

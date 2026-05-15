@@ -1,0 +1,78 @@
+name: "Bug"
+description: "Un défaut à reproduire et corriger."
+title: "[BUG] "
+type: "Bug"
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > Merci pour le signalement. Plus la reproduction est précise, plus la correction sera rapide.
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Étapes pour reproduire
+      description: Liste minimale d'étapes pour observer le bug.
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: attendu
+    attributes:
+      label: Comportement attendu
+    validations:
+      required: true
+
+  - type: textarea
+    id: observe
+    attributes:
+      label: Comportement observé
+      description: Inclure messages d'erreur exacts si applicables.
+    validations:
+      required: true
+
+  - type: textarea
+    id: environnement
+    attributes:
+      label: Environnement
+      description: Navigateur + version, OS, version du repo (commit SHA si possible), service concerné.
+      value: |
+        - Service / page :
+        - Navigateur / OS :
+        - Version du repo (commit / tag) :
+        - URL si applicable :
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severite
+    attributes:
+      label: Sévérité estimée
+      options:
+        - "low — désagrément cosmétique"
+        - "medium — fonctionnalité dégradée mais contournable"
+        - "high — fonctionnalité bloquée"
+        - "critical — sécurité, intégrité de données, ou panne complète"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / captures
+      description: Coller les logs pertinents (anonymisés) ou joindre une capture.
+      render: shell
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: security
+    attributes:
+      label: Sécurité
+      options:
+        - label: "Ce bug a potentiellement un impact sécurité (RCE, XSS, SQLi, IDOR, exposition de données). Je préfère le signaler en privé via security@aporiapolis.org (cf. SECURITY.md)."

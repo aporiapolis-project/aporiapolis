@@ -1,0 +1,57 @@
+# CODEOWNERS — AporiaPolis
+#
+# Voir https://docs.github.com/en/repositories/managing-your-repositories-settings-and-customization/customizing-your-repository/about-code-owners
+#
+# La règle la plus spécifique l'emporte sur la règle générale.
+# Ces propriétaires sont automatiquement requested-for-review sur toute PR
+# touchant aux fichiers concernés.
+
+# ---------------------------------------------------------------
+# Tout par défaut → @5amchaka
+# ---------------------------------------------------------------
+*                                       @5amchaka
+
+# ---------------------------------------------------------------
+# Méthodologie publique → comité de relecture (à créer une fois actif)
+# ---------------------------------------------------------------
+# /docs/methodology/                    @5amchaka @aporiapolis-project/comite-relecture
+/docs/methodology/                      @5amchaka
+
+# ---------------------------------------------------------------
+# RGPD / données sensibles / audit personnel → revue obligatoire sam
+# ---------------------------------------------------------------
+/services/api-rest/routers/audit_personnel/   @5amchaka
+/front-audit/                                  @5amchaka
+
+# ---------------------------------------------------------------
+# Migrations BDD → revue obligatoire sam (toute migration impacte la prod)
+# ---------------------------------------------------------------
+/migrations/                            @5amchaka
+/dbt/snapshots/                         @5amchaka
+
+# ---------------------------------------------------------------
+# ADR → revue obligatoire sam, jamais d'auto-merge
+# ---------------------------------------------------------------
+/docs/adr/                              @5amchaka
+
+# ---------------------------------------------------------------
+# Configuration repo / CI / sécurité
+# ---------------------------------------------------------------
+/.github/                               @5amchaka
+/.releaserc.json                        @5amchaka
+/commitlint.config.js                   @5amchaka
+/.pre-commit-config.yaml                @5amchaka
+/CLAUDE.md                              @5amchaka
+/CODE_OF_CONDUCT.md                     @5amchaka
+/SECURITY.md                            @5amchaka
+/LICENSE                                @5amchaka
+
+# ---------------------------------------------------------------
+# Contenu éditorial des dossiers
+# ---------------------------------------------------------------
+/dossiers/                              @5amchaka
+
+# ---------------------------------------------------------------
+# Source cards (chacune est un contrat juridique/technique)
+# ---------------------------------------------------------------
+/docs/sources/                          @5amchaka

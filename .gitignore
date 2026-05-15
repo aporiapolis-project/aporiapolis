@@ -1,0 +1,228 @@
+# ============================================================
+# AporiaPolis — .gitignore
+# ============================================================
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.Spotlight-V100
+.Trashes
+*~
+.fuse_hidden*
+.directory
+
+# --- IDE / Editors ---
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.example
+*.swp
+*.swo
+*.swn
+*~.nib
+*.sublime-workspace
+*.sublime-project
+.history/
+.ionide/
+.fleet/
+*.code-workspace
+
+# --- Claude / IA tools (caches, transcripts) ---
+.claude/cache/
+.claude/transcripts/
+.claude/.local/
+.cursor-*
+.codeium/
+.continue/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.cache
+.hypothesis/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.ruff_cache/
+.mypy_cache/
+.pyre/
+.pytype/
+.dmypy.json
+dmypy.json
+.ipynb_checkpoints
+
+# --- Virtual environments ---
+.venv/
+venv/
+ENV/
+env/
+.python-version
+
+# --- uv ---
+.uv/
+uv.lock.local
+
+# --- Poetry ---
+poetry.lock.local
+
+# --- Node / npm / pnpm / yarn ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+.npm/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+.eslintcache
+.stylelintcache
+
+# --- Astro / SvelteKit / Vite ---
+.astro/
+.svelte-kit/
+.vite/
+.next/
+.nuxt/
+.output/
+.cache/
+public/build/
+
+# --- TypeScript ---
+*.tsbuildinfo
+.tscache/
+
+# --- Go ---
+*.test
+*.out
+*.exe
+*.dll
+*.so.*
+go.work.sum
+bin/
+pkg/
+
+# --- dbt ---
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+dbt/dbt_modules/
+dbt/profiles.yml
+dbt/.user.yml
+
+# --- Dagster ---
+dagster/.dagster_home/
+dagster/storage/
+dagster/history/
+dagster/schedules/
+dagster/instance.yaml
+dagster_home/
+
+# --- Data / artifacts (jamais commit de données brutes) ---
+data/raw/
+data/bronze/
+data/silver/
+data/gold/
+data/exports/
+data/snapshots/
+*.duckdb
+*.duckdb.wal
+*.parquet
+*.arrow
+*.feather
+*.csv.zst
+
+# --- Terraform / Infra ---
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+*.tfvars
+!example.tfvars
+!*.example.tfvars
+.terragrunt-cache/
+
+# --- Ansible ---
+*.retry
+
+# --- Docker ---
+.docker/
+docker-compose.override.yml
+
+# --- Secrets (jamais committés) ---
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.crt
+*.csr
+*.p12
+*.pfx
+*.kdbx
+secrets/
+.secrets/
+.sops.yaml.local
+age.key
+*.age
+
+# --- Logs ---
+*.log
+logs/
+
+# --- Builds front ---
+dist/
+build/
+
+# --- Coverage / reporting ---
+lcov.info
+junit.xml
+report.html
+.scannerwork/
+
+# --- Misc ---
+*.bak
+*.tmp
+*.orig
+*.rej
+
+# --- Local override pour ce projet ---
+LOCAL.md
+TODO.local
+SCRATCH/
+.scratch/

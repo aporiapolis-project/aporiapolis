@@ -1,0 +1,78 @@
+# .pre-commit-config.yaml — AporiaPolis
+#
+# Installation locale :
+#   uv pip install pre-commit
+#   pre-commit install --hook-type pre-commit --hook-type commit-msg
+#
+# Mise à jour :
+#   pre-commit autoupdate
+
+repos:
+  # --- Python : ruff (lint + format) ---
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: ["--fix"]
+      - id: ruff-format
+
+  # --- SQL : sqlfluff (fix automatique des cas simples) ---
+  - repo: https://github.com/sqlfluff/sqlfluff
+    rev: 3.2.5
+    hooks:
+      - id: sqlfluff-fix
+        args: ["--dialect", "postgres"]
+        files: ^dbt/.*\.sql$
+
+  # --- Markdown / YAML / JSON : prettier ---
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        types_or: [markdown, yaml, json]
+        exclude: ^(CHANGELOG\.md|LICENSE|\.github/ISSUE_TEMPLATE/.*\.yml)$
+
+  # --- Garde-fous généraux ---
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^LICENSE$
+      - id: end-of-file-fixer
+        exclude: ^LICENSE$
+      - id: check-yaml
+        args: ["--allow-multiple-documents"]
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=512"]
+      - id: detect-private-key
+
+  # --- Conventional Commits (commit-msg stage) ---
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.6.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args:
+          - feat
+          - fix
+          - perf
+          - refactor
+          - docs
+          - test
+          - chore
+          - ci
+          - build
+          - style
+          - revert
+
+  # --- Hook local : dbt tests sur modèles modifiés ---
+  - repo: local
+    hooks:
+      - id: dbt-tests-on-modified
+        name: dbt tests on modified models
+        entry: bash -c 'if [ -d dbt ] && command -v dbt >/dev/null 2>&1; then cd dbt && dbt test --select state:modified+ --state ./target || true; fi'
+        language: system
+        files: ^dbt/models/.*\.sql$
+        pass_filenames: false

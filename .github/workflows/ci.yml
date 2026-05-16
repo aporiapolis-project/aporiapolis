@@ -1,0 +1,187 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  ruff:
+    name: Ruff (Python lint + format)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - run: ruff check .
+      - run: ruff format --check .
+
+  mypy:
+    name: Mypy (Python type check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install mypy
+      - name: Skip if no Python source yet
+        id: detect
+        run: |
+          if find services -name "*.py" 2>/dev/null | grep -q .; then
+            echo "has_python=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_python=false" >> $GITHUB_OUTPUT
+          fi
+      - if: steps.detect.outputs.has_python == 'true'
+        run: mypy services/
+
+  sqlfluff:
+    name: SQLFluff (dbt lint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install sqlfluff
+      - name: Skip if no SQL yet
+        id: detect
+        run: |
+          if find dbt -name "*.sql" 2>/dev/null | grep -q .; then
+            echo "has_sql=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_sql=false" >> $GITHUB_OUTPUT
+          fi
+      - if: steps.detect.outputs.has_sql == 'true'
+        run: sqlfluff lint dbt/ --dialect postgres
+
+  pytest:
+    name: Pytest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Skip if no tests yet
+        id: detect
+        run: |
+          if find tests services -name "test_*.py" -o -name "*_test.py" 2>/dev/null | grep -q .; then
+            echo "has_tests=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_tests=false" >> $GITHUB_OUTPUT
+          fi
+      - if: steps.detect.outputs.has_tests == 'true'
+        run: |
+          pip install pytest pytest-cov
+          if [ -f pyproject.toml ]; then pip install -e .; fi
+          pytest -ra --maxfail=5
+
+  dbt-test:
+    name: dbt tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Skip if no dbt models yet
+        id: detect
+        run: |
+          if find dbt/models -name "*.sql" 2>/dev/null | grep -q .; then
+            echo "has_dbt=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_dbt=false" >> $GITHUB_OUTPUT
+          fi
+      - if: steps.detect.outputs.has_dbt == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - if: steps.detect.outputs.has_dbt == 'true'
+        run: |
+          pip install dbt-core dbt-postgres
+          # Configuration profile à fournir via secrets en CI réelle.
+          # Pour l'instant : compile uniquement pour valider la syntaxe.
+          cd dbt && dbt parse
+
+  bandit:
+    name: Bandit (Python SAST)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install bandit
+      - name: Skip if no Python source yet
+        id: detect
+        run: |
+          if find services -name "*.py" 2>/dev/null | grep -q .; then
+            echo "has_python=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_python=false" >> $GITHUB_OUTPUT
+          fi
+      - if: steps.detect.outputs.has_python == 'true'
+        run: bandit -r services/ -ll
+
+  trivy-fs:
+    name: Trivy (filesystem scan)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
+          format: sarif
+          output: trivy-results.sarif
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: on-failure
+
+  ci-gate:
+    name: CI Gate
+    if: always()
+    needs:
+      - ruff
+      - mypy
+      - sqlfluff
+      - pytest
+      - dbt-test
+      - bandit
+      - trivy-fs
+      - dependency-review
+    runs-on: ubuntu-latest
+    steps:
+      - name: Decide whether CI passed
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}
+          # dependency-review is PR-only (skipped on push to main) — accepter ce skip.
+          allowed-skips: dependency-review

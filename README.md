@@ -29,6 +29,8 @@ Le projet est **open source** (AGPL-3.0), **piloté publiquement** (issues, Proj
 - [ADR-0021 — Architecture autorisée pour l'audit personnel](docs/adr/0021-audit-personnel-architecture.md) · local-only, aucune donnée article 9 RGPD traitée par le projet.
 - [ADR-0022 — Doctrine de rétention des corpus de presse et procédure Common Crawl](docs/adr/0022-doctrine-retention-presse.md) · destruction post-fouille, aucun bronze persistant pour la presse.
 - [ADR-0023 — Configuration GitHub publique](docs/adr/0023-github-organisation-publique.md) · organisation publique, issue types, Project public, labels réduits.
+- [ADR-0024 — Doctrine de relecture en deux strates](docs/adr/0024-doctrine-relecture-deux-strates.md) · strate 1 IA personae (interne), strate 2 comité humain (publique).
+- [ADR-0030 — Doctrine de release pre-MVP](docs/adr/0030-doctrine-release-pre-mvp.md) · `release-please` avec PR ouverte sur `main`, premier tag différé jusqu'au premier artefact MVP.
 
 ## Démarrer
 
@@ -36,7 +38,7 @@ Le projet est **open source** (AGPL-3.0), **piloté publiquement** (issues, Proj
 
 ## Contribuer
 
-Lire [CONTRIBUTING.md](CONTRIBUTING.md), puis ouvrir une issue avant de coder. Tout commit doit respecter [Conventional Commits](https://www.conventionalcommits.org/) et inclure les footers `IA-assistance:` et `Validation:`.
+Lire [CONTRIBUTING.md](CONTRIBUTING.md), puis ouvrir une issue avant de coder. Tout commit doit respecter [Conventional Commits](https://www.conventionalcommits.org/). Les footers `IA-assistance:` et `Validation:` sont recommandés (convention de traçabilité, enforcement prévu post-MVP).
 
 ## Code de conduite
 

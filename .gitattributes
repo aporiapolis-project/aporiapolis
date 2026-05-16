@@ -1,0 +1,28 @@
+# .gitattributes — AporiaPolis
+#
+# Force LF line endings for all text files. Évite les "phantom changes"
+# CRLF/LF entre Windows (git-bash) et WSL/Linux quand on travaille
+# en cross-environment sur le repo (cf. session bootstrap 2026-05-15).
+
+* text=auto eol=lf
+
+# Binaires explicites (pas de conversion)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg text eol=lf
+*.pdf binary
+*.zip binary
+*.gz binary
+*.duckdb binary
+*.parquet binary
+
+# Scripts shell : LF strict
+*.sh text eol=lf
+
+# Scripts Windows : CRLF (au cas où)
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf

@@ -1,6 +1,6 @@
 # CLAUDE.md — conventions et contexte pour les agents IA
 
-> Ce fichier est chargé automatiquement par Claude Code et lu par tout agent IA travaillant sur ce repo. Il fixe le contexte, les conventions, les règles d'engagement IA et les anti-patterns. **Toute IA contribuant au repo respecte ce document.**
+> Ce fichier est chargé automatiquement par Claude Code et lu par tout agent IA travaillant sur ce repo (Codex CLI, Cursor, Cline, Aider, Continue, Claude Code, etc.). Il fixe le contexte, les conventions, les règles d'engagement IA et les anti-patterns. **Toute IA contribuant au repo respecte ce document.** Aucun outil IA spécifique n'est prescrit ; le nom du fichier est une convention de portabilité.
 
 ## 1. Contexte projet
 
@@ -41,20 +41,22 @@ Format :
 [footers]
 ```
 
-Subject : ≤ 50 caractères, impératif présent, sans majuscule initiale, sans point final.
+Subject : ≤ 80 caractères, impératif présent, sans majuscule initiale, sans point final. (Enforced par `commitlint.config.mjs` `header-max-length: 80`.)
 
 Types autorisés : `feat`, `fix`, `perf`, `refactor`, `docs`, `test`, `chore`, `ci`, `build`, `style`, `revert`. Breaking : `feat!` ou footer `BREAKING CHANGE:`.
 
-Scopes autorisés : voir `commitlint.config.js`. Principaux : `infra`, `api`, `mcp`, `front-public`, `front-audit`, `dwh`, `graph`, `audit`, `methodo`, `repo`, `deps`, `ingestion-<source>`, `dwh-<dossier>`, `dossier-<slug>`.
+Scopes autorisés : voir `commitlint.config.mjs`. Principaux : `infra`, `api`, `mcp`, `front-public`, `front-audit`, `dwh`, `graph`, `audit`, `methodo`, `repo`, `deps`, `release`, `adr`, `ingestion-<source>`, `dwh-<dossier>`, `dossier-<slug>`.
 
-### Footers obligatoires pour tout commit assisté par IA
+### Footers recommandés pour tout commit assisté par IA
 
 ```
-IA-assistance: <claude-code|cowork|codex|other>
+IA-assistance: <claude-code|cowork|codex|none>
 Validation: sam
 ```
 
-Le footer `IA-assistance:` est *non-standard* mais consommé par un hook d'auto-observation. **Ne pas l'omettre.** Le footer `Validation: sam` matérialise la relecture humaine systématique.
+Le footer `IA-assistance:` documente l'origine de l'édition et alimentera à terme un mécanisme d'auto-observation. **Convention recommandée, non bloquante en pre-MVP** : aucun hook ne rejette aujourd'hui un commit sans ces footers. L'enforcement (hook commit-msg dédié) est prévu post-MVP — voir issue tech-debt `[tech-debt] Enforcer footers IA-assistance/Validation via hook commit-msg`.
+
+Le footer `Validation: sam` matérialise la relecture humaine systématique.
 
 Footers complémentaires : `Refs: #123`, `Closes: #456`, `BREAKING CHANGE: ...`, `DPIA: oui` (commit touchant des données personnelles).
 
@@ -91,7 +93,7 @@ Footers complémentaires : `Refs: #123`, `Closes: #456`, `BREAKING CHANGE: ...`,
 
 ### Python
 - `ruff` pour lint + format (`ruff check . && ruff format .`).
-- `mypy --strict` sur les services.
+- `mypy` sur `services/` (sans `--strict` en MVP — voir issue tech-debt `[tech-debt] Enforcer mypy --strict quand le code Python existera`).
 - Typage explicite y compris pour les variables locales si non triviales.
 - Pas de `from x import *`. Pas de `print()` en code de production (utiliser `logging`).
 - Tests : `pytest`, fixtures factory-style, noms `test_<unité>_<comportement>`.
@@ -101,6 +103,7 @@ Footers complémentaires : `Refs: #123`, `Closes: #456`, `BREAKING CHANGE: ...`,
 - Modèles `snake_case` préfixés : `stg_<source>__<entity>`, `int_<theme>__<step>`, `fact_<grain>`, `dim_<entity>`.
 - SCD2 systématique sur dimensions politiques (`dim_acteur`, `dim_parti`, `dim_programme`).
 - Tests dbt nommés explicitement : `not_null_dim_acteur_id`, etc.
+- Hook pre-commit `dbt-tests-on-modified` non-bloquant en MVP (`|| true`) tant qu'il n'y a pas de modèles. Retrait du `|| true` prévu post-premier modèle — voir issue tech-debt `[tech-debt] Enforcer dbt test après premier modèle dbt`.
 
 ### Svelte / TypeScript
 - Composants en PascalCase, fichiers `<Composant>.svelte`.
@@ -122,16 +125,24 @@ Footers complémentaires : `Refs: #123`, `Closes: #456`, `BREAKING CHANGE: ...`,
 - **Ajouter un commentaire qui décrit *ce que* fait le code.** Si nécessaire, expliquer *pourquoi*.
 - **Créer un fichier `.md` de documentation que personne n'a demandé.** Préférer enrichir un fichier existant.
 - **Référencer un ticket, une PR ou un commit dans un commentaire de code.** Ces références rotent — mettre l'info dans le commit / PR description.
-- **Faire un commit sans les footers `IA-assistance:` et `Validation:`.** Le hook les rejette.
 
-## 7. Documents de référence
+## 7. Politique de merge
+
+`squash` only. `merge commit` et `rebase merge` désactivés au niveau settings repo. Historique `main` linéaire, un commit par PR. Le titre du commit final = titre de la PR (Conventional Commits respecté).
+
+## 8. Doctrine de release
+
+Voir [ADR-0030](docs/adr/0030-doctrine-release-pre-mvp.md). En pre-MVP : `release-please` ouvre et maintient une PR `chore(main): release X.Y.Z` sur `main`. Le merge de cette PR crée le tag + la GitHub Release. La PR reste ouverte jusqu'à publication d'un premier artefact MVP (post-EPIC G slice OWID). Pas de bump major automatique tant que `version < 1.0.0`.
+
+## 9. Documents de référence
 
 - Conventions complètes : voir `docs/adr/` et le doc planning externe (`Rain Razor/10_conventions.md`).
+- Décisions structurantes récentes : [ADR-0024 — Doctrine de relecture en deux strates](docs/adr/0024-doctrine-relecture-deux-strates.md), [ADR-0030 — Doctrine de release pre-MVP](docs/adr/0030-doctrine-release-pre-mvp.md).
 - Backlog v2 : géré dans GitHub Issues + Project public. Source d'autorité : les issues, pas un fichier markdown.
 - Méthodologie publique : `docs/methodology/` (en cours).
 - Sources : `docs/sources/<slug>.md`, une carte par source ingérée.
 
-## 8. Quand poser une question vs avancer
+## 10. Quand poser une question vs avancer
 
 - **Avance** : la convention est claire, la story est cadrée, les tests passent, aucune décision juridique n'est touchée.
 - **Demande** : la story est sous gate, plusieurs interprétations sont possibles, un fichier hors scope serait modifié, une dépendance externe doit être ajoutée.

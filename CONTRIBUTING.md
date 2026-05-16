@@ -34,25 +34,25 @@ IA-assistance: <claude-code|cowork|codex|none>
 Validation: <pseudo>
 ```
 
-- Types : `feat`, `fix`, `perf`, `refactor`, `docs`, `test`, `chore`, `ci`, `build`, `style`.
+- Types : `feat`, `fix`, `perf`, `refactor`, `docs`, `test`, `chore`, `ci`, `build`, `style`, `revert`.
 - Breaking change : `feat!` ou footer `BREAKING CHANGE:`.
-- Scopes : voir `commitlint.config.js`.
-- Subject : ≤ 50 caractères, mode impératif, sans majuscule initiale, sans point final.
+- Scopes : voir `commitlint.config.mjs`.
+- Subject : ≤ 80 caractères, mode impératif, sans majuscule initiale, sans point final.
 
-### Trace IA obligatoire
+### Trace IA — recommandée
 
-Tout commit doit indiquer son niveau d'assistance IA :
+Convention de traçabilité : tout commit indique son niveau d'assistance IA via les footers `IA-assistance:` et `Validation:`. **Recommandée, non bloquante en pre-MVP** : aucun hook ne rejette aujourd'hui un commit sans ces footers (l'enforcement via hook commit-msg dédié est prévu post-MVP, voir issue tech-debt). Liste des valeurs `IA-assistance:` :
 
-- `IA-assistance: claude-code` — édition agentique via Claude Code.
-- `IA-assistance: cowork` — alignement / rédaction assistés par Cowork.
-- `IA-assistance: codex` — complétion via Codex.
-- `IA-assistance: none` — strictement manuel.
+- `claude-code` — édition agentique via Claude Code.
+- `cowork` — alignement / rédaction assistés par Cowork.
+- `codex` — complétion via Codex.
+- `none` — strictement manuel.
 
 Le footer `Validation:` indique l'humain ayant relu et validé. **Tous les commits sont relus**, même les commits IA, par sam ou par un·e contributeur·rice habilité·e.
 
 ### Squash & merge
 
-Le commit final après squash respecte les Conventional Commits. Les commits intermédiaires sur la branche peuvent être plus bavards, ils sont écrasés.
+`squash` est l'**unique** mode de merge autorisé par les settings repo (`merge commit` et `rebase merge` désactivés). Le commit final après squash respecte les Conventional Commits. Les commits intermédiaires sur la branche peuvent être plus bavards, ils sont écrasés.
 
 ### Taille de PR
 
@@ -94,7 +94,7 @@ uv pip install pre-commit
 pre-commit install --hook-type pre-commit --hook-type commit-msg
 ```
 
-Les hooks lancent : `ruff`, `sqlfluff`, `prettier` (md/yaml/json), `conventional-pre-commit`, et `dbt test` sur les modèles modifiés.
+Les hooks lancent : `ruff`, `sqlfluff`, `prettier` (md/yaml/json), `conventional-pre-commit`, et `dbt test` sur les modèles modifiés. Le hook `dbt test` est **non-bloquant** en MVP (statu quo `|| true`) tant qu'il n'y a pas de modèles ; le retrait du `|| true` est prévu post-premier modèle (voir issue tech-debt `[tech-debt] Enforcer dbt test après premier modèle dbt`).
 
 ## 7. Tests
 

@@ -65,7 +65,7 @@ Closes #
 Refs #
 
 <!--
-Footer obligatoire à inclure dans le commit final (squash) :
+Footer recommandé à inclure dans le commit final (squash) :
 
   IA-assistance: <claude-code|cowork|codex|none>
   Validation: <pseudo, par défaut sam>

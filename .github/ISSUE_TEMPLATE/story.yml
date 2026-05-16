@@ -137,7 +137,7 @@ body:
     id: ia_trace
     attributes:
       label: Assistance IA prévue
-      description: Cocher les outils prévus. À reporter dans le footer `IA-assistance:` du commit final.
+      description: Cocher les outils prévus. À reporter (recommandé) dans le footer `IA-assistance:` du commit final.
       options:
         - label: "Claude Code (édition agentique)"
         - label: "Cowork (alignement, rédaction)"
@@ -156,4 +156,4 @@ body:
     attributes:
       value: |
         ---
-        *Le footer obligatoire du commit final : `IA-assistance: <outil>` puis `Validation: sam`.*
+        *Le footer recommandé du commit final : `IA-assistance: <outil>` puis `Validation: sam`.*

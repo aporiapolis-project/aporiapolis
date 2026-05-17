@@ -31,9 +31,7 @@ $RECYCLE.BIN/
 *.code-workspace
 
 # --- Claude / IA tools (caches, transcripts) ---
-.claude/cache/
-.claude/transcripts/
-.claude/.local/
+.claude/
 .cursor-*
 .codeium/
 .continue/

@@ -29,6 +29,8 @@ Ne pas dévier sans ADR superseding explicite.
 | CLI (post-MVP) | Go |
 | Hébergement | Scaleway VPS + Postgres managé + Object Storage, Caddy reverse proxy, Cloudflare front |
 
+> **Déviations MVP local actées** : voir [ADR-0031](docs/adr/0031-strategie-stockage-mvp.md) (stack hybride DuckDB+parquet en MVP local, Postgres+Object Storage en prod) et [ADR-0032](docs/adr/0032-mode-consommation-page-api.md) (mode de consommation page → API en CSR via islands Svelte 5). Ces déviations n'invalident pas le tableau ci-dessus pour la cible prod ; elles documentent la couche MVP local qui n'est pas couverte verbatim par ce tableau.
+
 ## 3. Conventional Commits — obligatoire
 
 Format :

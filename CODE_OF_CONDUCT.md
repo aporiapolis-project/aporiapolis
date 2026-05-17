@@ -52,7 +52,7 @@ Ce Code de Conduite s'applique dans tous les espaces communautaires, et s'appliq
 
 ## Application
 
-Les cas de comportement abusif, harcelant ou autrement inacceptable peuvent être signalés aux responsables de la communauté chargés de l'application via une **Discussion privée** sur ce dépôt ou en ouvrant une **GitHub Issue avec le label `conduct`**. Une boîte mail dédiée `conduct@aporiapolis.org` sera activée lorsque le domaine sera acquis (cf. EPIC B infra Scaleway). Toutes les plaintes seront examinées et étudiées rapidement et équitablement.
+Les cas de comportement abusif, harcelant ou autrement inacceptable peuvent être signalés aux responsables de la communauté chargés de l'application en ouvrant une **GitHub Issue avec le label `conduct`**. Une boîte mail dédiée `conduct@aporiapolis.org` sera activée lorsque le domaine sera acquis (cf. EPIC B infra Scaleway). Toutes les plaintes seront examinées et étudiées rapidement et équitablement.
 
 Tous les responsables de la communauté sont tenus de respecter la vie privée et la sécurité de la personne qui signale tout incident.
 

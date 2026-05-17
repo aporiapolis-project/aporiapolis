@@ -13,7 +13,9 @@ Le projet est en phase pre-MVP. La seule version supportée est la branche `main
 
 > **Ne pas ouvrir d'issue publique pour une vulnérabilité de sécurité.** Préférer le canal privé ci-dessous.
 
-Envoyer un email à `security@aporiapolis.org` (à activer dès le déploiement de l'infrastructure).
+Ouvrir un **GitHub Security Advisory privé** sur ce dépôt : <https://github.com/aporiapolis-project/aporiapolis/security/advisories/new>. C'est le canal natif privé recommandé par GitHub pour les rapports de vulnérabilité ; il permet d'échanger en privé avec les mainteneurs et de coordonner un embargo avant divulgation.
+
+Une boîte mail dédiée `security@aporiapolis.org` sera activée lorsque le domaine sera acquis (cf. EPIC B infra Scaleway, juin 2026).
 
 Inclure dans le signalement :
 
@@ -58,6 +60,8 @@ Ce projet est porté en solo sur fonds propres et certifié par un dispositif de
 
 ## Contact
 
-`security@aporiapolis.org` (à activer).
+Canal de signalement privé : **GitHub Security Advisory privé** sur ce dépôt (<https://github.com/aporiapolis-project/aporiapolis/security/advisories/new>).
+
+Une adresse `security@aporiapolis.org` sera activée lorsque le domaine sera acquis (cf. EPIC B infra Scaleway).
 
 Clé PGP : à publier ici une fois générée et déposée sur un keyserver public.

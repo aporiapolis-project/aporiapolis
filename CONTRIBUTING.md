@@ -120,5 +120,5 @@ Voir [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) pour le cadre interpersonnel.
 ## 9. Contact
 
 - Issues : <https://github.com/aporiapolis-project/aporiapolis/issues>.
-- DPO / RGPD : `dpo@aporiapolis.org` (à activer).
-- Sécurité : `security@aporiapolis.org` (à activer) — voir [SECURITY.md](SECURITY.md).
+- Sécurité : **GitHub Security Advisory privé** — voir [SECURITY.md](SECURITY.md).
+- DPO / RGPD : un canal dédié sera ouvert après acquisition du domaine.

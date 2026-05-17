@@ -46,7 +46,7 @@ Voir [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Le désaccord politique de fond e
 
 ## Sécurité
 
-Voir [SECURITY.md](SECURITY.md) — divulgation responsable à `security@aporiapolis.org`.
+Voir [SECURITY.md](SECURITY.md) — divulgation responsable via un **GitHub Security Advisory privé**.
 
 ## Licence
 

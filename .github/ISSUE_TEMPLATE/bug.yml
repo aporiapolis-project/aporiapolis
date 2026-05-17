@@ -75,4 +75,4 @@ body:
     attributes:
       label: Sécurité
       options:
-        - label: "Ce bug a potentiellement un impact sécurité (RCE, XSS, SQLi, IDOR, exposition de données). Je préfère le signaler en privé via security@aporiapolis.org (cf. SECURITY.md)."
+        - label: "Ce bug a potentiellement un impact sécurité (RCE, XSS, SQLi, IDOR, exposition de données). Je préfère le signaler en privé via un GitHub Security Advisory (cf. SECURITY.md)."

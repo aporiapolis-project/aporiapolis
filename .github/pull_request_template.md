@@ -36,12 +36,9 @@ Le commit final après squash & merge sera ce titre + le corps ci-dessous.
 
 ## Trace IA
 
-Cocher ce qui s'applique. Le commit final doit refléter ces choix dans son footer `IA-assistance:`.
+Indiquer l'assistance réellement utilisée. Le commit final doit refléter ce choix dans son footer `IA-assistance:`.
 
-- [ ] **Cowork** — pour : <!-- rédaction, mockups, alignement, planning… -->
-- [ ] **Claude Code** — pour : <!-- édition agentique de code, refactor, tests générés… -->
-- [ ] **Codex** — pour : <!-- complétion ponctuelle… -->
-- [ ] Aucune (strictement manuel).
+- Assistance IA : <!-- outil(s) utilisé(s), rôle, ou « aucune » -->
 
 ## Tests
 
@@ -67,6 +64,6 @@ Refs #
 <!--
 Footer recommandé à inclure dans le commit final (squash) :
 
-  IA-assistance: <claude-code|cowork|codex|none>
+  IA-assistance: <outil-utilisé|none>
   Validation: <pseudo, par défaut sam>
 -->

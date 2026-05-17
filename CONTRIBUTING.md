@@ -30,7 +30,7 @@ Format : `<type>/<scope>-<courte-description>`. Exemples : `feat/api-pagination-
 
 [body : pourquoi et conséquences]
 
-IA-assistance: <claude-code|cowork|codex|none>
+IA-assistance: <outil-utilisé|none>
 Validation: <pseudo>
 ```
 
@@ -41,12 +41,7 @@ Validation: <pseudo>
 
 ### Trace IA — recommandée
 
-Convention de traçabilité : tout commit indique son niveau d'assistance IA via les footers `IA-assistance:` et `Validation:`. **Recommandée, non bloquante en pre-MVP** : aucun hook ne rejette aujourd'hui un commit sans ces footers (l'enforcement via hook commit-msg dédié est prévu post-MVP, voir issue tech-debt). Liste des valeurs `IA-assistance:` :
-
-- `claude-code` — édition agentique via Claude Code.
-- `cowork` — alignement / rédaction assistés par Cowork.
-- `codex` — complétion via Codex.
-- `none` — strictement manuel.
+Convention de traçabilité : tout commit indique si une assistance IA a été utilisée via les footers `IA-assistance:` et `Validation:`. **Recommandée, non bloquante en pre-MVP** : aucun hook ne rejette aujourd'hui un commit sans ces footers (l'enforcement via hook commit-msg dédié est prévu post-MVP, voir issue tech-debt). La valeur `IA-assistance:` est un identifiant court libre pour l'outil réellement utilisé ; `none` signifie strictement manuel. Le projet n'impose aucun outil.
 
 Le footer `Validation:` indique l'humain ayant relu et validé. **Tous les commits sont relus**, même les commits IA, par sam ou par un·e contributeur·rice habilité·e.
 

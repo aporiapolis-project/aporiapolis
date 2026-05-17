@@ -148,3 +148,52 @@ Voir [ADR-0030](docs/adr/0030-doctrine-release-pre-mvp.md). En pre-MVP : `releas
 - **Demande** : la story est sous gate, plusieurs interprétations sont possibles, un fichier hors scope serait modifié, une dépendance externe doit être ajoutée.
 
 En cas de doute : ouvre une issue `tech-debt` qui documente la question et continue avec ton meilleur jugement plutôt que de bloquer.
+
+## 11. Doctrine AporiaPolis
+
+Cette section codifie les principes directeurs pour tout agent IA contribuant à ce repo — quelles que soient ses prompt rules ou son contexte d'exécution (Cowork, Codex CLI, Cursor, Cline, Aider, Continue, Claude Code, Copilot, etc.). Source persistante de la doctrine : mémoire Cowork `feedback_aporiapolis_doctrine_remediation.md`. Référence externe pour les principes 5-8 : https://github.com/multica-ai/andrej-karpathy-skills.
+
+Ces principes biaisent vers **prudence > vitesse**. Pour les tâches triviales (correction de typo, one-liner évident), l'agent peut juger que la rigueur complète n'est pas requise. Le but est de réduire les erreurs coûteuses sur le travail non-trivial, pas de ralentir les tâches simples.
+
+### 11.1 Gouvernance (principes 1-4)
+
+Issus de la relecture du plan de remédiation post-audit (16 mai 2026), à appliquer à toute future remédiation ou mise en conformité du repo.
+
+**Principe 1 — Ne pas rendre vert ce qui ment encore.** Avant de réparer un mécanisme cassé, décider d'abord ce qu'il doit vraiment faire. Refuser le fix qui fabrique de la fausse santé. Cas typiques : workflow CI rouge dont la sémantique est questionnable, doc qui promet ce qui n'est pas enforced, channel mail annoncé mais inexistant. Trancher la sémantique avant le technique.
+
+**Principe 2 — Les checks requis en branch protection sont des PR gates uniquement.** Les workflows post-merge (release, deploy, notify, publish) n'appartiennent jamais aux required status checks. Pattern adopté : un job final `ci-gate` qui dépend de lint/test/security/dep-review, et qui devient le check requis avec `Validate commit messages`. Les noms à exiger sont les **display names** des jobs (clé `name:` YAML), pas les workflow names ni les job_ids.
+
+**Principe 3 — La fermeture d'items Project v2 est acceptance-based, jamais bulk.** Aucun item ne se ferme « parce qu'il fait partie d'un livrable » — chaque item ne se ferme que quand son acceptance criteria explicite est atteint, idéalement vérifié contre le réel (état repo, CI, code). Corriger un board qui ment en fermant tout en bloc ne corrige pas — ça lui demande de mentir dans l'autre sens.
+
+**Principe 4 — Le premier livrable exécutable utilise l'architecture décidée.** Le but de la première tranche verticale n'est pas de « livrer un truc rapide » ; c'est de **prouver que l'architecture décidée fonctionne**. Tout shortcut prouve seulement le shortcut. Question d'arbitrage : est-ce que je prouve l'architecture décidée, ou est-ce que je contourne une partie d'elle ?
+
+### 11.2 Discipline de coding (principes 5-8, actifs dès B-8)
+
+Issus des observations Andrej Karpathy sur les pièges récurrents des LLMs en coding (cf. https://github.com/multica-ai/andrej-karpathy-skills). Reformulés tool-agnostic, conforme à la décision D-9 du B-4 (CLAUDE.md tool-agnostic).
+
+**Déclenchement : à partir de B-8** (premier code applicatif AporiaPolis, slice OWID E2E via EPIC G). Avant B-8, le repo est doc + ADR + config CI sans fichier de code applicatif — ces principes n'ont pas de cible.
+
+**Principe 5 — Penser avant de coder.** Avant la première ligne de code, expliciter les hypothèses, présenter les interprétations alternatives quand le BRIEF est ambigu, identifier les tradeoffs des options envisagées. Aucune lecture ambiguë ne se résout silencieusement. Comportements à tenir : énoncer les hypothèses, présenter les lectures alternatives, pousser un retour si une approche plus simple existe, stopper face à la confusion. Critère de revue : un PR review ne doit pas révéler d'hypothèse implicite non documentée.
+
+**Principe 6 — Simplicité d'abord.** Le code livré est le minimum nécessaire pour satisfaire l'acceptance criteria du BRIEF. Pas de feature non demandée, pas d'abstraction (factory, plugin, registry) avant le deuxième cas d'usage concret, pas de « flexibilité » ou de « configurabilité » non listée, pas d'error handling pour scénarios impossibles. Test : un ingénieur senior dirait-il que ce code est sur-compliqué ? Si oui, réécrire. Si 200 lignes pourraient être 50, c'est une violation. Note : la simplicité n'autorise pas le sous-engineering — le minimum nécessaire inclut la robustesse demandée par l'acceptance criteria et les tests qu'elle exige.
+
+**Principe 7 — Modifications chirurgicales.** Ne toucher que ce qui est strictement nécessaire à la mission. Pas d'« amélioration » de code adjacent (style, commentaires, formatting) non demandée. Pas de refactor de code qui marche. Style existant respecté tel quel, même si l'agent ferait autrement. Le dead-code orphelin pré-existant est **mentionné** (RESULT.md ou issue tech-debt), pas supprimé dans la PR courante. Quand le changement crée des orphelins (imports, variables, fonctions devenus inutilisés **par ce changement précis**) : les nettoyer. Test de trace : chaque ligne du diff doit tracer à un item de l'acceptance criteria.
+
+**Principe 8 — Exécution guidée par le critère de succès.** Toute tâche impérative est reformulée en critère de succès vérifiable avant d'écrire du code. Exemples : « ajouter la validation » → « écrire les tests sur les entrées invalides, puis les faire passer » ; « corriger le bug » → « écrire un test qui reproduit le bug, puis le faire passer » ; « refactorer X » → « tests passent avant ET après ». Pour les multi-étapes, plan court avec check par étape :
+
+```
+1. [Étape] → vérifier : [check]
+2. [Étape] → vérifier : [check]
+3. [Étape] → vérifier : [check]
+```
+
+Patterns de vérification adaptés à AporiaPolis (non exhaustifs) : tests `pytest` sur un service Python, tests `dbt test` sur un modèle dbt, acceptance criteria d'une issue Project v2, `make demo` qui tourne d'une commande, validation visuelle sur API ou page web. Critère de succès fort = l'agent boucle indépendamment vers la solution. Critère faible (« make it work ») = aller-retours coûteux. Toujours pousser pour le critère le plus précis vérifiable de bout en bout.
+
+**Lien explicite Principe 8 ↔ Principe 3** : le critère de succès du Principe 8 est l'acceptance criteria du Principe 3, à deux échelles différentes (item Project v2 = échelle gouvernance, tâche de la mission = échelle coding). Les deux se renforcent.
+
+### 11.3 Sources
+
+- `feedback_aporiapolis_doctrine_remediation.md` (mémoire Cowork) — source persistante des 8 principes.
+- https://github.com/multica-ai/andrej-karpathy-skills — origine des principes 5-8 (fork miroir de `forrestchang/andrej-karpathy-skills`, dérivé d'observations d'Andrej Karpathy sur les pièges LLM coding).
+- ADR-0030 doctrine release pre-MVP — exemple d'application du Principe 1.
+- `Rain Razor/audit-remediation-2026-05-16/PLAN.md` (planning interne, hors repo) — application des principes 1-3 sur l'arc remédiation B-0 → B-7 + B-6.

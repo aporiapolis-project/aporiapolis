@@ -38,8 +38,9 @@
 # Configuration repo / CI / sécurité
 # ---------------------------------------------------------------
 /.github/                               @5amchaka
-/.releaserc.json                        @5amchaka
-/commitlint.config.js                   @5amchaka
+/release-please-config.json             @5amchaka
+/.release-please-manifest.json          @5amchaka
+/commitlint.config.mjs                  @5amchaka
 /.pre-commit-config.yaml                @5amchaka
 /CLAUDE.md                              @5amchaka
 /CODE_OF_CONDUCT.md                     @5amchaka

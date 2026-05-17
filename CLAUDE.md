@@ -1,6 +1,6 @@
 # CLAUDE.md — conventions et contexte pour les agents IA
 
-> Ce fichier est chargé automatiquement par Claude Code et lu par tout agent IA travaillant sur ce repo (Codex CLI, Cursor, Cline, Aider, Continue, Claude Code, etc.). Il fixe le contexte, les conventions, les règles d'engagement IA et les anti-patterns. **Toute IA contribuant au repo respecte ce document.** Aucun outil IA spécifique n'est prescrit ; le nom du fichier est une convention de portabilité.
+> Ce fichier sert de référence à tout agent IA travaillant sur ce repo. Il fixe le contexte, les conventions, les règles d'engagement IA et les anti-patterns. **Toute IA contribuant au repo respecte ce document.** Aucun outil IA spécifique n'est prescrit ; le nom du fichier est une convention de portabilité.
 
 ## 1. Contexte projet
 
@@ -50,11 +50,11 @@ Scopes autorisés : voir `commitlint.config.mjs`. Principaux : `infra`, `api`, `
 ### Footers recommandés pour tout commit assisté par IA
 
 ```
-IA-assistance: <claude-code|cowork|codex|none>
+IA-assistance: <outil-utilisé|none>
 Validation: sam
 ```
 
-Le footer `IA-assistance:` documente l'origine de l'édition et alimentera à terme un mécanisme d'auto-observation. **Convention recommandée, non bloquante en pre-MVP** : aucun hook ne rejette aujourd'hui un commit sans ces footers. L'enforcement (hook commit-msg dédié) est prévu post-MVP — voir issue tech-debt `[tech-debt] Enforcer footers IA-assistance/Validation via hook commit-msg`.
+Le footer `IA-assistance:` documente l'origine de l'édition et alimentera à terme un mécanisme d'auto-observation. Utiliser un identifiant court pour l'outil réellement employé, ou `none` si le commit est strictement manuel. **Convention recommandée, non bloquante en pre-MVP** : aucun hook ne rejette aujourd'hui un commit sans ces footers. L'enforcement (hook commit-msg dédié) est prévu post-MVP — voir issue tech-debt `[tech-debt] Enforcer footers IA-assistance/Validation via hook commit-msg`.
 
 Le footer `Validation: sam` matérialise la relecture humaine systématique.
 
@@ -132,11 +132,11 @@ Footers complémentaires : `Refs: #123`, `Closes: #456`, `BREAKING CHANGE: ...`,
 
 ## 8. Doctrine de release
 
-Voir [ADR-0030](docs/adr/0030-doctrine-release-pre-mvp.md). En pre-MVP : `release-please` ouvre et maintient une PR `chore(main): release X.Y.Z` sur `main`. Le merge de cette PR crée le tag + la GitHub Release. La PR reste ouverte jusqu'à publication d'un premier artefact MVP (post-EPIC G slice OWID). Pas de bump major automatique tant que `version < 1.0.0`.
+Voir [ADR-0030](docs/adr/0030-doctrine-release-pre-mvp.md). En pre-MVP : `release-please` ouvre et maintient une PR `chore(release): release aporiapolis X.Y.Z` sur `main`. Le merge de cette PR crée le tag + la GitHub Release. La PR reste ouverte jusqu'à publication d'un premier artefact MVP (post-EPIC G slice OWID). Pas de bump major automatique tant que `version < 1.0.0`.
 
 ## 9. Documents de référence
 
-- Conventions complètes : voir `docs/adr/` et le doc planning externe (`Rain Razor/10_conventions.md`).
+- Conventions complètes : voir `CONTRIBUTING.md`, `commitlint.config.mjs` et `docs/adr/`.
 - Décisions structurantes récentes : [ADR-0024 — Doctrine de relecture en deux strates](docs/adr/0024-doctrine-relecture-deux-strates.md), [ADR-0030 — Doctrine de release pre-MVP](docs/adr/0030-doctrine-release-pre-mvp.md).
 - Backlog v2 : géré dans GitHub Issues + Project public. Source d'autorité : les issues, pas un fichier markdown.
 - Méthodologie publique : `docs/methodology/` (en cours).
@@ -151,7 +151,7 @@ En cas de doute : ouvre une issue `tech-debt` qui documente la question et conti
 
 ## 11. Doctrine AporiaPolis
 
-Cette section codifie les principes directeurs pour tout agent IA contribuant à ce repo — quelles que soient ses prompt rules ou son contexte d'exécution (Cowork, Codex CLI, Cursor, Cline, Aider, Continue, Claude Code, Copilot, etc.). Source persistante de la doctrine : mémoire Cowork `feedback_aporiapolis_doctrine_remediation.md`. Référence externe pour les principes 5-8 : https://github.com/multica-ai/andrej-karpathy-skills.
+Cette section codifie les principes directeurs pour tout agent IA contribuant à ce repo, indépendamment de l'outil utilisé ou de son contexte d'exécution. Référence externe pour les principes 5-8 : https://github.com/multica-ai/andrej-karpathy-skills.
 
 Ces principes biaisent vers **prudence > vitesse**. Pour les tâches triviales (correction de typo, one-liner évident), l'agent peut juger que la rigueur complète n'est pas requise. Le but est de réduire les erreurs coûteuses sur le travail non-trivial, pas de ralentir les tâches simples.
 
@@ -169,7 +169,7 @@ Issus de la relecture du plan de remédiation post-audit (16 mai 2026), à appli
 
 ### 11.2 Discipline de coding (principes 5-8, actifs dès B-8)
 
-Issus des observations Andrej Karpathy sur les pièges récurrents des LLMs en coding (cf. https://github.com/multica-ai/andrej-karpathy-skills). Reformulés tool-agnostic, conforme à la décision D-9 du B-4 (CLAUDE.md tool-agnostic).
+Issus des observations Andrej Karpathy sur les pièges récurrents des LLMs en coding (cf. https://github.com/multica-ai/andrej-karpathy-skills). Reformulés de manière tool-agnostic.
 
 **Déclenchement : à partir de B-8** (premier code applicatif AporiaPolis, slice OWID E2E via EPIC G). Avant B-8, le repo est doc + ADR + config CI sans fichier de code applicatif — ces principes n'ont pas de cible.
 
@@ -193,7 +193,5 @@ Patterns de vérification adaptés à AporiaPolis (non exhaustifs) : tests `pyte
 
 ### 11.3 Sources
 
-- `feedback_aporiapolis_doctrine_remediation.md` (mémoire Cowork) — source persistante des 8 principes.
 - https://github.com/multica-ai/andrej-karpathy-skills — origine des principes 5-8 (fork miroir de `forrestchang/andrej-karpathy-skills`, dérivé d'observations d'Andrej Karpathy sur les pièges LLM coding).
 - ADR-0030 doctrine release pre-MVP — exemple d'application du Principe 1.
-- `Rain Razor/audit-remediation-2026-05-16/PLAN.md` (planning interne, hors repo) — application des principes 1-3 sur l'arc remédiation B-0 → B-7 + B-6.

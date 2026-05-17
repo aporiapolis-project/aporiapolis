@@ -10,7 +10,7 @@
 
 Au 16 mai 2026, le workflow `Release` du repo est rouge depuis le bootstrap :
 
-- `semantic-release` (configuré dans `.releaserc.json`, plugin `@semantic-release/git`) tente de pousser directement sur `main`, mais la branche est protégée et exige une PR avec le check `Validate commit messages`. Le push est rejeté par `GH006: Protected branch update failed for refs/heads/main` — cause confirmée par le log du run `25959757458` (audit Claude Code, 16 mai 2026).
+- l'ancien workflow fondé sur `semantic-release` tente de pousser directement sur `main`, mais la branche est protégée et exige une PR avec le check `Validate commit messages`. Le push est rejeté par `GH006: Protected branch update failed for refs/heads/main` — cause confirmée par le log du run `25959757458` (audit du 16 mai 2026).
 - Plus profondément, `semantic-release` veut produire `v1.0.0` à partir de l'historique actuel — qui contient déjà plusieurs commits `feat:` du bootstrap (`feat(dossier-medias): add framing note v0.2 [...]`, etc.) — alors que le repo se déclare `pre-mvp` et qu'aucun livrable n'est encore disponible publiquement.
 
 Le problème n'est donc pas seulement technique (un workflow à patcher), il est **sémantique** : qu'est-ce qu'une release pour AporiaPolis tant qu'aucun artefact n'est publiable ? La présente ADR acte la doctrine de release pour la phase pre-MVP — c'est-à-dire jusqu'au premier slice E2E livrable du dossier Médias (brief B-8 du plan post-audit). Elle prépare l'implémentation par le brief B-1.
@@ -19,11 +19,11 @@ Le problème n'est donc pas seulement technique (un workflow à patcher), il est
 
 ### Option A — `release-please` (Google)
 
-Action `googleapis/release-please-action` qui maintient ouverte une PR « Release X.Y.Z » à jour à chaque push sur `main`. La release Git/GitHub (tag + release notes + CHANGELOG) n'est créée qu'au moment où un humain merge cette PR. Compatible avec `main` protégée nativement, pas de bypass ni de PAT nécessaire. Permet de différer le premier tag jusqu'à un moment choisi.
+Action `googleapis/release-please-action` qui maintient ouverte une PR « Release X.Y.Z » à jour à chaque push sur `main`. La release Git/GitHub (tag + release notes + CHANGELOG) n'est créée qu'au moment où un humain merge cette PR. Compatible avec `main` protégée sans bypass ; un token dédié à portée limitée est utilisé pour que les PRs générées déclenchent les checks attendus. Permet de différer le premier tag jusqu'à un moment choisi.
 
 **Pour** :
 - Compatibilité branch protection native (la release PR passe les mêmes checks que toute autre PR).
-- Pas de risque de `v1.0.0` surprise : `initial-version: 0.0.0` + `bump-minor-pre-major: true` rendent la première release `v0.1.0` au moment où sam le décide.
+- Pas de risque de `v1.0.0` surprise : `initial-version: 0.1.0` + `bump-minor-pre-major: true` rendent la première release `v0.1.0` au moment où sam le décide.
 - Réversibilité élevée : retirer le workflow + le manifest suffit à débrancher l'outil.
 - Cohérent avec le principe doctrinaire 1 (ne pas rendre vert ce qui ment encore) : la mécanique est en place mais ne déclenche rien tant qu'on ne le veut pas.
 
@@ -46,7 +46,7 @@ Conservation de `semantic-release` mais reconfiguration pour ouvrir une PR au li
 
 ### Option C — Désactivation jusqu'au premier artefact publiable
 
-Suppression du workflow `release.yml` (et archivage ou suppression de `.releaserc.json`). Pas d'automatisation tant qu'il n'y a rien de réellement publiable (probablement après B-8). Une issue tech-debt acte la condition de réactivation.
+Suppression du workflow `release.yml` et de l'ancienne configuration `semantic-release`. Pas d'automatisation tant qu'il n'y a rien de réellement publiable (probablement après B-8). Une issue tech-debt acte la condition de réactivation.
 
 **Pour** :
 - Cohérence doctrinaire maximale : on ne fait pas semblant d'avoir une chaîne de release tant qu'il n'y a rien à releaser.
@@ -69,23 +69,25 @@ Motivation principale : préparer la mécanique de release sans mentir aujourd'h
 - **Workflow** : `.github/workflows/release-please.yml` utilisant `googleapis/release-please-action@v4` (ou la dernière version stable au moment de l'exécution de B-1, à pinner explicitement).
 - **Config** : `release-please-config.json` à la racine, avec :
   - `release-type: simple` (mode single package, pas de monorepo).
-  - `initial-version: 0.0.0`.
+  - `package-name: aporiapolis`.
+  - `initial-version: 0.1.0`.
   - `bump-minor-pre-major: true` (les commits `feat:` produisent des bumps `minor` tant que la version reste en `0.x.y`, jamais un bump `major` automatique vers `1.0.0`).
+  - `group-pull-request-title-pattern: "chore(release): release${component} ${version}"` afin que la PR groupée reste compatible avec commitlint tout en gardant le composant visible.
 - **Manifest** : `.release-please-manifest.json` à la racine, contenu initial `{".": "0.0.0"}`.
-- **Suppression** : l'ancien `.releaserc.json` et l'ancien workflow `.github/workflows/release.yml` sont retirés dans la même PR de B-1, pour éviter toute coexistence ambiguë.
-- **Permissions du workflow** : `contents: write`, `pull-requests: write`. Pas de PAT — utilise le `GITHUB_TOKEN` fourni par Actions.
+- **Suppression** : l'ancien workflow `.github/workflows/release.yml` est retiré dans la même PR de B-1, pour éviter toute coexistence ambiguë.
+- **Permissions du workflow** : `contents: write`, `pull-requests: write`. Le secret `RELEASE_PLEASE_TOKEN` porte un token dédié à portée limitée ; il permet aux PRs générées de déclencher les workflows habituels sans contourner la branch protection.
 - **Comportement attendu après B-1** :
-  - À chaque push sur `main`, release-please crée ou met à jour une PR intitulée « chore(main): release X.Y.Z » avec changelog généré et bump du manifest.
+  - À chaque push sur `main`, release-please crée ou met à jour une PR intitulée `chore(release): release aporiapolis X.Y.Z` avec changelog généré et bump du manifest.
   - Tant que la PR n'est pas mergée, aucun tag, aucune release GitHub, aucun changelog publié.
   - Le premier merge d'une telle PR (probablement déclenché manuellement par sam après B-8) crée le tag `v0.1.0`, la release GitHub correspondante, et le `CHANGELOG.md` initial.
-- **Conventions de commit** : le filtre de types reste celui de Conventional Commits (cf. `CLAUDE.md` §3). `feat:` → bump `minor`, `fix:` → bump `patch`, `docs:`/`chore:`/`ci:`/etc. → pas de bump. À documenter dans `release-please-config.json` via `changelog-sections` pour aligner le rendu sur l'actuel `.releaserc.json` (Features, Bug Fixes, Performance, Refactoring, Documentation).
+- **Conventions de commit** : le filtre de types reste celui de Conventional Commits (cf. `CLAUDE.md` §3). `feat:` → bump `minor`, `fix:` → bump `patch`, `docs:`/`chore:`/`ci:`/etc. → pas de bump. À documenter dans `release-please-config.json` via `changelog-sections` pour aligner le rendu attendu (Features, Bug Fixes, Performance, Refactoring, Documentation).
 
 ## Conséquences
 
 ### Positives
 - **Cohérence doctrinaire** : aucun mensonge dans la chaîne CI — le workflow Release ne tournera plus à vide en boucle d'échec dès lors que B-1 sera mergé.
 - **Pas de release surprise** : le premier `v0.1.0` sera produit par un acte humain conscient, après B-8.
-- **Branch protection respectée** : la release PR passe par les mêmes checks que n'importe quelle PR ; pas besoin de bypass ni de PAT élevé.
+- **Branch protection respectée** : la release PR passe par les mêmes checks que n'importe quelle PR ; aucun bypass n'est nécessaire.
 - **Réversibilité** : la chaîne `release-please` peut être démontée avec un commit (3 fichiers à retirer) si une autre stratégie devient préférable.
 
 ### Négatives
@@ -97,7 +99,7 @@ Motivation principale : préparer la mécanique de release sans mentir aujourd'h
 
 Cette ADR sera revisitée :
 - À la **fin de B-8** (premier slice OWID E2E livré), pour acter la transition pre-MVP → MVP et pour décider du déclenchement de `v0.1.0` (qui peut soit advenir par merge de la release PR maintenue par l'outil, soit demander une intervention manuelle si la doctrine évolue).
-- Si la **stratégie de versionnement éditorial** (versionnement des dossiers, cf. `Rain Razor/10_conventions.md` §5) impose un découplage avec le versionnement code — par exemple si on adopte un versionnement double `code-vMAJOR.MINOR / dossier-medias-vYYYY-MM` qui ne s'accommoderait pas du modèle single-package de release-please.
+- Si la **stratégie de versionnement éditorial** impose un découplage avec le versionnement code — par exemple si on adopte un versionnement double `code-vMAJOR.MINOR / dossier-medias-vYYYY-MM` qui ne s'accommoderait pas du modèle single-package de release-please.
 - Si une **faille de sécurité** ou un **changement de licence** affectent `release-please-action` au point d'imposer un retrait de l'outil.
 - Si la **doctrine de branch protection** évolue (par exemple en supprimant le check requis sur `main`, scénario peu probable mais pas exclu).
 
@@ -105,15 +107,14 @@ Cette ADR sera revisitée :
 
 Quelques points à vérifier au moment de B-1 :
 
-- L'historique actuel contient plusieurs commits `feat(dossier-medias): ...` du bootstrap. Avec `initial-version: 0.0.0` + `bump-minor-pre-major: true`, release-please ne déclenchera pas un saut vers `v1.0.0` — il produira une release PR proposant `v0.1.0`. Vérifier la PR créée par release-please dès le premier push post-merge B-1 pour confirmer ce comportement.
+- L'historique actuel contient plusieurs commits `feat(dossier-medias): ...` du bootstrap. Avec `initial-version: 0.1.0` + `bump-minor-pre-major: true`, release-please ne déclenchera pas un saut vers `v1.0.0` — il produira une release PR proposant `v0.1.0`. Vérifier la PR créée par release-please dès le premier push post-merge B-1 pour confirmer ce comportement.
 - Le `CHANGELOG.md` n'existe pas encore dans le repo. release-please le crée à la première release. Pas de pré-création nécessaire.
 - Ne **pas** ajouter le workflow `release-please` aux checks requis en branch protection — c'est un workflow post-merge, par construction il s'exécute *après* le merge. Cf. principe doctrinaire 2 (pré-vol §7).
 - Le footer `IA-assistance:` du commit de release auto sera `none` (généré par bot), avec `Validation:` à formuler — point à trancher dans B-1 (probablement `Validation: sam` au moment du merge manuel de la release PR, suffisant comme traçabilité).
 
 ## Refs
 
-- Audit Claude Code 16 mai 2026 (findings P0 sur CI rouge).
-- Plan post-audit : `Rain Razor/audit-remediation-2026-05-16/PLAN.md` brief B-0.
-- Doctrine de remédiation sam : mémoire Cowork `feedback_aporiapolis_doctrine_remediation.md` (principe 1 — ne pas rendre vert ce qui ment encore ; principe 2 — Release jamais en checks requis).
+- Audit du 16 mai 2026 (findings P0 sur CI rouge).
+- Mise en conformité end-to-end C-1 (17 mai 2026) : PRs #116, #118, #120 ; PR release-please conforme #121.
 - Documentation release-please : <https://github.com/googleapis/release-please>.
 - Run en échec du workflow Release actuel : <https://github.com/aporiapolis-project/aporiapolis/actions/runs/25959757458>.

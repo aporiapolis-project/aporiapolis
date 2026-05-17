@@ -14,7 +14,7 @@ Ce dossier contient les fiches des **personae IA** utilisées pour la pré-relec
 
 ## Comment utiliser une persona
 
-Chaque fiche contient un **prompt-type** prêt à coller dans Cowork ou Claude.ai. Le pattern est toujours le même :
+Chaque fiche contient un **prompt-type** prêt à coller dans l'outil IA de votre choix. Le pattern est toujours le même :
 
 1. Ouvrez une nouvelle conversation (séparée de la session de production en cours).
 2. Collez le prompt-type complet de la persona en début de conversation.

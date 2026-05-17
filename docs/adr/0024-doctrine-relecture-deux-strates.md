@@ -16,7 +16,7 @@ Cependant, ce comité humain a deux limites pratiques :
 
 2. **Capacité de traitement modeste** : un comité bénévole peut absorber ~10-20 heures de relecture par an et par membre. Sur la durée du projet, cela ne couvre que les publications majeures. Les itérations intermédiaires (révision d'une sous-question, ajustement méthodologique, mise à jour trimestrielle d'un dossier vivant) ne peuvent pas toutes passer par le comité humain.
 
-L'arrivée à maturité des modèles d'IA générative (Cowork / Claude / autres) crée une opportunité méthodologique nouvelle : **utiliser des personae IA comme première strate de relecture critique**. Ces personae, instanciées par des prompts structurés simulant des profils-types, peuvent fournir une critique dense et rapide d'un dossier ou d'une note, en quelques minutes.
+L'arrivée à maturité des modèles d'IA générative crée une opportunité méthodologique nouvelle : **utiliser des personae IA comme première strate de relecture critique**. Ces personae, instanciées par des prompts structurés simulant des profils-types, peuvent fournir une critique dense et rapide d'un dossier ou d'une note, en quelques minutes.
 
 Cette ADR fixe la doctrine pour intégrer cette strate sans trahir la posture épistémique du projet.
 
@@ -100,7 +100,7 @@ Sur chaque page de dossier publiée, l'encart « Production de cette page » men
 - **Complexité accrue du processus** : 4-6 étapes de relecture par dossier au lieu de 1-2.
 - **Discipline indispensable** : risque de glissement sémantique (« j'ai fait relire » sans préciser par qui) que la doctrine doit prévenir par sa rigueur.
 - **Dépendance à la qualité des personae IA** : si une persona est mal cadrée, ses retours seront biaisés sans qu'on le sache forcément. Mitigation : versionnement public des personae, possibilité pour des contributeurs externes de proposer des évolutions via PR.
-- **Coût IA** : usage de Cowork ou Claude.ai compris dans les abonnements déjà payés. Coût marginal nul pour le projet.
+- **Coût IA** : usage couvert par des abonnements déjà payés. Coût marginal nul pour le projet.
 
 ### Conditions de révision
 

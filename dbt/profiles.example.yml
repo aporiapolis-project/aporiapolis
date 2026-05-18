@@ -1,0 +1,23 @@
+# dbt profiles.example.yml — AporiaPolis MVP local
+#
+# Stack actée par ADR-0031 : ce fichier ne mentionne QUE la target
+# duckdb, sans autre target active en MVP local.
+#
+# Refs : #45 [G.1], ADR-0031.
+#
+# Utilisation :
+#   1. Copier vers ~/.dbt/profiles.yml ou créer un lien symbolique :
+#      ln -s "$(pwd)/dbt/profiles.example.yml" ~/.dbt/profiles.yml
+#   2. Le fichier DuckDB cible (data/duckdb/aporiapolis.duckdb) est
+#      créé par `make db.up` puis peuplé par `make db.migrate`.
+#   3. Les commandes dbt (`dbt run`, `dbt test`, etc.) seront
+#      introduites par les briefs B-8.2 et B-8.3.
+
+aporiapolis:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: data/duckdb/aporiapolis.duckdb
+      threads: 1
+      schema: main

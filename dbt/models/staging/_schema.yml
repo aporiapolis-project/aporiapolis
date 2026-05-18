@@ -1,0 +1,49 @@
+version: 2
+
+# B-8.3 — G.3 #47 — Schéma staging dbt
+# Définit la source raw + les tests sur stg_owid__co2_emissions.
+
+sources:
+  - name: raw
+    description: "Schéma raw DuckDB — miroirs 1:1 des sources bronze (cf. ADR-0031, B-8.1 docs/dwh/modelisation.md)."
+    schema: raw
+    tables:
+      - name: owid_co2_emissions
+        description: "Miroir 1:1 du parquet bronze OWID CO2 emissions (B-8.2). 79 colonnes, ~50,411 lignes."
+
+models:
+  - name: stg_owid__co2_emissions
+    description: |
+      Projection contractuelle 6 colonnes utiles depuis raw.owid_co2_emissions
+      + colonne 'source' dérivée. Contrat B-8.3.
+      Source: OWID (CC BY 4.0).
+    columns:
+      - name: country
+        description: "Nom du pays (canonique anglais OWID)."
+        tests:
+          - not_null
+      - name: iso_code
+        description: "Code ISO-3166-1 alpha-3 ('FRA' pour France). Nullable pour agrégats régionaux/mondiaux."
+      - name: year
+        description: "Année (4 chiffres). Couverture France : 1750-2024."
+        tests:
+          - not_null
+      - name: co2
+        description: "Émissions annuelles CO2 (Mt). Énergie + ciment + flaring. Exclut LUCF."
+      - name: co2_per_capita
+        description: "Émissions CO2 par habitant (tCO2/hab/an)."
+      - name: population
+        description: "Population totale du pays année N."
+      - name: source
+        description: "Attribution OWID + Global Carbon Budget. Constante en B-8.3."
+        tests:
+          - not_null
+
+# Note (D8 + P6) : aucun test composite (country, year) ici. L'unicité
+# (country, year) est garantie par construction OWID upstream
+# (Global Carbon Budget publie un tuple par (pays, année)) et reportée
+# en raw 1:1 via la migration 002 idempotente. Pas de duplication
+# défensive (P6 — règle des 2 cas d'usage : aucune source ingérée à ce
+# jour ne casse cet invariant). L'invariant composite explicite vit
+# uniquement sur marts.indicateur (assert_indicateur_unique.sql) où
+# il fait partie du contrat éditorial publié.

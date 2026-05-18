@@ -47,6 +47,7 @@ def validator():
         OwidHeaderDriftError,
         _validate_header,
     )
+
     return _validate_header, OwidHeaderDriftError
 
 
@@ -55,9 +56,7 @@ def validator():
 # ---------------------------------------------------------------------------
 
 
-def test_missing_column_raises(
-    validator, expected_columns: list[str]
-) -> None:
+def test_missing_column_raises(validator, expected_columns: list[str]) -> None:
     _validate_header, OwidHeaderDriftError = validator
 
     # Header avec la dernière colonne retirée → manquante
@@ -76,9 +75,7 @@ def test_missing_column_raises(
 # ---------------------------------------------------------------------------
 
 
-def test_added_column_raises(
-    validator, expected_columns: list[str]
-) -> None:
+def test_added_column_raises(validator, expected_columns: list[str]) -> None:
     _validate_header, OwidHeaderDriftError = validator
 
     # Header avec une colonne supplémentaire non attendue
@@ -92,9 +89,7 @@ def test_added_column_raises(
     )
 
 
-def test_exact_match_passes(
-    validator, expected_columns: list[str]
-) -> None:
+def test_exact_match_passes(validator, expected_columns: list[str]) -> None:
     _validate_header, OwidHeaderDriftError = validator
 
     # Identique → ne raise pas

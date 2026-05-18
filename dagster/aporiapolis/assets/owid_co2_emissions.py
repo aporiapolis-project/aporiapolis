@@ -53,9 +53,7 @@ def _build_session(http_config: Mapping[str, Any]) -> requests.Session:
     retry = Retry(
         total=retry_config.get("total", 3),
         backoff_factor=retry_config.get("backoff_factor", 1.0),
-        status_forcelist=retry_config.get(
-            "status_forcelist", [500, 502, 503, 504]
-        ),
+        status_forcelist=retry_config.get("status_forcelist", [500, 502, 503, 504]),
         allowed_methods=frozenset(["GET", "HEAD"]),
     )
     adapter = HTTPAdapter(max_retries=retry)
@@ -202,9 +200,7 @@ def raw_owid_co2_emissions(
     # software-defined assets). Pas besoin de deps=[...] explicite.
     parquet_path = owid_co2_emissions_bronze
 
-    context.log.info(
-        f"Loading {parquet_path} into raw.owid_co2_emissions (DuckDB)"
-    )
+    context.log.info(f"Loading {parquet_path} into raw.owid_co2_emissions (DuckDB)")
 
     con = duckdb.connect(DUCKDB_PATH)
     try:

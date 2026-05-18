@@ -85,9 +85,7 @@ def test_yaml_config_loads(yaml_config: dict) -> None:
     )
 
 
-def test_url_consistent_card_to_yaml(
-    yaml_config: dict, source_card_text: str
-) -> None:
+def test_url_consistent_card_to_yaml(yaml_config: dict, source_card_text: str) -> None:
     """L'URL canonique du YAML doit apparaître dans la source card."""
     yaml_url = yaml_config["url"]
     assert yaml_url in source_card_text, (

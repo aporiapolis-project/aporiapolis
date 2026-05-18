@@ -19,6 +19,7 @@ import pytest
 def defs():
     """Charge les Definitions du module aporiapolis."""
     from aporiapolis import defs as aporiapolis_defs
+
     return aporiapolis_defs
 
 
@@ -32,9 +33,7 @@ def test_job_ingest_owid_climate_exists(defs) -> None:
 def test_schedule_daily_ingest_owid_exists(defs) -> None:
     """Acceptance G.2 #46 — schedule quotidien 02:00 UTC."""
     schedule = defs.get_schedule_def("daily_ingest_owid")
-    assert schedule is not None, (
-        "Schedule 'daily_ingest_owid' doit exister"
-    )
+    assert schedule is not None, "Schedule 'daily_ingest_owid' doit exister"
 
 
 def test_schedule_cron_and_timezone(defs) -> None:
@@ -52,6 +51,7 @@ def test_schedule_default_status_stopped(defs) -> None:
     """Le schedule est déclaré STOPPED par défaut (D5 + doctrine MVP
     « fraîcheur prouvée nécessaire »)."""
     from dagster import DefaultScheduleStatus
+
     schedule = defs.get_schedule_def("daily_ingest_owid")
     assert schedule.default_status == DefaultScheduleStatus.STOPPED, (
         "Schedule doit être STOPPED par défaut (MVP B-8.2)"
@@ -61,15 +61,9 @@ def test_schedule_default_status_stopped(defs) -> None:
 def test_bronze_and_raw_assets_declared(defs) -> None:
     """Les 2 assets chaînés (D1) sont déclarés."""
     asset_graph = defs.resolve_asset_graph()
-    asset_keys = {
-        key.to_user_string() for key in asset_graph.get_all_asset_keys()
-    }
-    assert "owid_co2_emissions_bronze" in asset_keys, (
-        "Asset bronze doit être déclaré"
-    )
-    assert "raw_owid_co2_emissions" in asset_keys, (
-        "Asset raw doit être déclaré"
-    )
+    asset_keys = {key.to_user_string() for key in asset_graph.get_all_asset_keys()}
+    assert "owid_co2_emissions_bronze" in asset_keys, "Asset bronze doit être déclaré"
+    assert "raw_owid_co2_emissions" in asset_keys, "Asset raw doit être déclaré"
 
 
 def test_no_tag_concurrency_limits_in_definitions(defs) -> None:

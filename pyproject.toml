@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aporiapolis"
+version = "0.1.0"
+description = "AporiaPolis civic-tech data pipelines (MVP, pre-1.0)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "AGPL-3.0-or-later" }
+authors = [
+    { name = "AporiaPolis maintainers" },
+]
+keywords = ["civic-tech", "data-engineering", "dagster", "duckdb"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+# Dépendances runtime minimales requises pour B-8.2.
+# Tout ajout futur passe par un brief AporiaPolis explicite (P6).
+# dagster-webserver n'est PAS inclus (aucune mission ne le lance —
+# pré-vol §36 + P6 dépendance non exercée = suspecte).
+dependencies = [
+    "dagster>=1.5,<2.0",
+    "duckdb==1.5.2",
+    "pyarrow>=14.0",
+    "requests>=2.31",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/aporiapolis-project/aporiapolis"
+Repository = "https://github.com/aporiapolis-project/aporiapolis"
+Issues = "https://github.com/aporiapolis-project/aporiapolis/issues"
+
+# Discovery du package `aporiapolis` qui vit sous dagster/aporiapolis/.
+# `where = ["dagster"]` indique à setuptools de chercher les packages
+# Python à la racine du dossier `dagster/`, donc il trouve
+# `aporiapolis` (= dagster/aporiapolis/__init__.py).
+[tool.setuptools.packages.find]
+where = ["dagster"]
+
+# Inclure les YAML de config sources dans la distribution (wheel).
+# Sans cela, un install non-editable oublierait owid.yaml et
+# importlib.resources renverrait FileNotFoundError.
+[tool.setuptools.package-data]
+"aporiapolis.config.sources" = ["*.yaml"]
+
+[tool.setuptools]
+include-package-data = true

@@ -17,8 +17,16 @@ Le projet est **open source** (AGPL-3.0), **piloté publiquement** (issues, Proj
 
 ## Architecture résumée
 
-- **Ingestion** : Dagster orchestre les pipelines vers Postgres (bronze → silver → gold via dbt).
-- **DWH** : Postgres managé Scaleway, modélisation dimensionnelle avec SCD2 pour les positions partis et acteurs.
+- **MVP local (T1-T2 2026)** : DuckDB + parquet local, Dagster,
+  modèles dbt, FastAPI, Svelte 5 en CSR islands. Voir ADR-0031
+  (stratégie stockage MVP) et ADR-0032 (mode rendu CSR).
+- **Prod cible (V2+)** : Postgres + Object Storage (Scaleway),
+  même surface applicative, migration sans réécriture grâce aux
+  types SQL portables. Voir ADR-0031 et EPIC B (infrastructure).
+- **Ingestion** : Dagster orchestre les pipelines bronze → raw →
+  staging/marts via dbt.
+- **DWH** : DuckDB en MVP local, Postgres managé Scaleway en prod cible,
+  modélisation dimensionnelle avec SCD2 pour les positions partis et acteurs.
 - **API** : FastAPI publique read-only, OpenAPI 3.1 auto.
 - **Front public** : Astro 5, accessibility-first (axe-core 0 défaut niveau A).
 - **Audit personnel** : SPA Svelte, *calcul intégralement côté navigateur*, aucune persistance serveur.
@@ -31,10 +39,38 @@ Le projet est **open source** (AGPL-3.0), **piloté publiquement** (issues, Proj
 - [ADR-0023 — Configuration GitHub publique](docs/adr/0023-github-organisation-publique.md) · organisation publique, issue types, Project public, labels réduits.
 - [ADR-0024 — Doctrine de relecture en deux strates](docs/adr/0024-doctrine-relecture-deux-strates.md) · strate 1 IA personae (interne), strate 2 comité humain (publique).
 - [ADR-0030 — Doctrine de release pre-MVP](docs/adr/0030-doctrine-release-pre-mvp.md) · `release-please` avec PR ouverte sur `main`, premier tag différé jusqu'au premier artefact MVP.
+- [ADR-0031 — Stratégie stockage MVP (DuckDB+parquet local / Postgres prod)](docs/adr/0031-strategie-stockage-mvp.md)
+- [ADR-0032 — Mode rendu CSR islands Svelte 5](docs/adr/0032-csr-islands-svelte5.md)
+- [ADR-0033 — Concurrency des dbt-snapshots dans Dagster](docs/adr/0033-concurrency-dbt-snapshots.md)
 
 ## Démarrer
 
-> Le squelette de services est posé mais les pipelines ne sont pas encore implémentés. Voir le [backlog](https://github.com/aporiapolis-project/aporiapolis/issues?q=is%3Aopen+label%3Aepic) pour suivre l'avancement.
+Voir le [backlog](https://github.com/aporiapolis-project/aporiapolis/issues?q=is%3Aopen+label%3Aepic) pour suivre l'avancement.
+
+### Ingestion (état post-B-8.2)
+
+Premier pipeline d'ingestion implémenté : **OWID CO2 emissions**.
+
+- **Asset bronze** `owid_co2_emissions_bronze` : télécharge le CSV
+  OWID complet (79 colonnes), valide le header contre un contrat
+  YAML (fail-fast sur drift), écrit un parquet horodaté à
+  `data/bronze/owid/co2_emissions/snapshot_date=YYYY-MM-DD/co2_emissions.parquet`.
+- **Asset raw** `raw_owid_co2_emissions` : charge le parquet dans
+  la table DuckDB `raw.owid_co2_emissions` (miroir 1:1).
+- **Job nommé** `ingest_owid_climate` matérialise les 2 assets.
+- **Schedule déclaratif** `daily_ingest_owid` (02:00 UTC,
+  `default_status=STOPPED`) — déclaratif, non actif sans
+  `dagster-daemon` lancé.
+
+Démonstration end-to-end (env frais) :
+
+```bash
+rm -rf data/duckdb data/bronze .venv && make demo-ingest
+```
+
+Voir `docs/sources/owid.md` (source card humaine),
+`dagster/aporiapolis/config/sources/owid.yaml` (config machine),
+et ADR-0031 / ADR-0033.
 
 ## Contribuer
 

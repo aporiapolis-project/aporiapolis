@@ -66,7 +66,7 @@ run_dbt_models_job = define_asset_job(
 
 # B-8.3 — G.4 #48 — Job dbt snapshot.
 # run_tag 'dagster/dbt_snapshot' figé verbatim ADR-0033 + dagster.yaml.
-# Sérialisé par tag_concurrency_limits (limit=1) côté instance queue.
+# Sérialisé par la règle d'instance Dagster (limit=1) côté queue.
 snapshot_indicateur_job = define_asset_job(
     name="snapshot_indicateur_job",
     selection=AssetSelection.assets(dbt_snapshot_indicateur),

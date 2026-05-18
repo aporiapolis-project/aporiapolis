@@ -139,7 +139,6 @@ dbt/target/
 dbt/dbt_packages/
 dbt/logs/
 dbt/dbt_modules/
-dbt/profiles.yml
 dbt/.user.yml
 
 # --- Dagster ---
@@ -149,6 +148,11 @@ dagster/history/
 dagster/schedules/
 dagster/instance.yaml
 dagster_home/
+# B-8.3 — DAGSTER_HOME defaults to the repo root for local demos.
+history/
+schedules/
+storage/
+.telemetry/
 
 # --- Data / artifacts (jamais commit de données brutes) ---
 data/raw/

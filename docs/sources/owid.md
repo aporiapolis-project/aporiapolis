@@ -4,7 +4,8 @@
 >
 > **Référence doctrine** : `CLAUDE.md §1 Gate 2 — Source contract`. Cette carte est le contrat préalable obligatoire à toute ingestion de la source OWID dans le DWH AporiaPolis.
 >
-> **Cible d'ingestion en B-8.2** : pipeline Dagster `ingest_owid_climate` (story #46 [G.2]) — bronze parquet local (cf. ADR-0031), silver DuckDB `staging.stg_owid__co2_emissions`, mart `marts.mart_co2_emissions` (B-8.3).
+> **Ingestion réalisée B-8.2** : pipeline Dagster `ingest_owid_climate` (story #46 [G.2]) — bronze parquet local (cf. ADR-0031), raw DuckDB `raw.owid_co2_emissions` miroir 1:1 (79 colonnes, 50 411 lignes).
+> **Transformation réalisée B-8.3** : staging DuckDB `staging.stg_owid__co2_emissions` (projection contractuelle), mart DuckDB `marts.indicateur` (contrat figé, slug `fr-co2-total-annual`, 217 lignes France 1802-2024 dans le snapshot OWID courant), snapshot DuckDB `audit_log.snapshot_indicateur` (strategy `check`).
 
 ## 1. Identité de la source
 
@@ -64,20 +65,29 @@ Le CSV OWID contient ~70 colonnes (cf. codebook). Pour B-8 (slice CO2 emissions 
 
 **Schéma cible silver** (B-8.2 ingestion + B-8.3 staging) : conserver les colonnes ci-dessus + `_ingested_at` (timestamp d'ingestion) + `_source_url` (URL CSV au moment de l'ingestion). Renommage en snake_case standard.
 
-**Schéma cible mart** (B-8.3 — cf. ADR-0031 et plan B-8.3) :
+**Schéma cible mart** (B-8.3 — implémenté, cf. ADR-0031 §"contrat dbt
+staging+mart" + D6 brief B-8.3) :
 
 ```
-mart_co2_emissions
+marts.indicateur
 ├── slug         text     not null  -- ex: 'fr-co2-total-annual'
 ├── year         integer  not null
 ├── value        numeric  not null  -- valeur en unité indiquée par 'unit'
 ├── unit         text     not null  -- 'Mt CO2'
 ├── source       text     not null  -- 'OWID/Global Carbon Budget 2024'
 ├── country_iso  text               -- 'FRA' (nullable pour agrégats globaux)
-└── PK (slug, year)
+└── PK (slug, year, country_iso)
 ```
 
-Pour B-8 (slug unique `fr-co2-total-annual`), le mart contiendra une ligne par année disponible côté OWID pour la France (≈275 lignes : 1750-2024).
+Nom générique `indicateur` (singulier) — le mart accueillera plusieurs
+slugs au fil des slices EPIC G futurs (un slug = une question
+éditoriale instrumentée). En B-8.3, un seul slug
+(`fr-co2-total-annual`), 217 lignes observées dans le snapshot OWID
+courant (France 1802-2024).
+
+Test composite unique `(slug, year, country_iso)` via test SQL custom
+dbt natif (`dbt/tests/assert_indicateur_unique.sql`). D8 brief
+B-8.3 — pas de dépendance `dbt-utils` pour un seul invariant.
 
 ## 6. Granularité, fraîcheur, fréquence
 
@@ -149,6 +159,7 @@ Ce test garantit que la doc publique (ce fichier) et la config exécutée (yaml)
 | Version | Date | Auteur | Modifications |
 |---|---|---|---|
 | v0.1 | 2026-05-17 | sam + cowork | Création initiale dans le cadre du brief B-8.0 (rebaselining doctrinaire pré-EPIC G). |
+| v0.2 | 2026-05-18 | sam + cowork | B-8.3 — Alignement §5 sur le nom de mart effectivement implémenté : `marts.indicateur` (générique, plusieurs slugs) au lieu de l'ancien nom spécifique CO2. PK composite `(slug, year, country_iso)`. Test composite via SQL custom dbt natif (pas `dbt-utils`, D8). Count observé : 217 lignes France 1802-2024 pour le slug `fr-co2-total-annual`. |
 
 Toute évolution future (URL changée, schéma divergent, licence évoluée) doit ajouter une ligne à ce tableau et un comment-trail sur l'issue de l'ingestion correspondante.
 

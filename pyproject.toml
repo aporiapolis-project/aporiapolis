@@ -29,6 +29,8 @@ classifiers = [
 # pré-vol §36 + P6 dépendance non exercée = suspecte).
 dependencies = [
     "dagster>=1.5,<2.0",
+    "dbt-core",
+    "dbt-duckdb",
     "duckdb==1.5.2",
     "pyarrow>=14.0",
     "requests>=2.31",

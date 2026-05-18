@@ -9,6 +9,15 @@ VENV := .venv
 PYTHON := $(VENV)/bin/python
 DAGSTER := $(VENV)/bin/dagster
 
+# B-8.3 — D7, SD2 — Variables d'environnement Dagster + dbt.
+# DAGSTER_HOME : chemin où `dagster.yaml` est lu. Défaut = racine repo.
+#   Override possible : `DAGSTER_HOME=/tmp/... make ...`.
+# DBT_PROFILES_DIR : chemin où `profiles.yml` est lu. Défaut = `dbt/`.
+DAGSTER_HOME ?= $(CURDIR)
+DBT_PROFILES_DIR ?= $(CURDIR)/dbt
+export DAGSTER_HOME
+export DBT_PROFILES_DIR
+
 # Création du virtualenv via uv. Idempotent : uv venv ne recrée pas
 # si .venv existe déjà.
 $(VENV)/bin/python:
@@ -36,6 +45,20 @@ db.migrate: db.up
 db.show-schemas: install
 	@$(PYTHON) -c "import duckdb; con = duckdb.connect('data/duckdb/aporiapolis.duckdb'); rows = con.execute('SELECT schema_name FROM information_schema.schemata ORDER BY schema_name').fetchall(); [print(r[0]) for r in rows]; con.close()"
 
+.PHONY: dbt.run dbt.test dbt.snapshot
+
+# B-8.3 — G.3 — Exécute `dbt run` sur tous les modèles staging + marts.
+dbt.run: $(VENV)
+	@$(VENV)/bin/dbt run --target dev
+
+# B-8.3 — G.3 — Exécute `dbt test` sur tous les tests dbt.
+dbt.test: $(VENV)
+	@$(VENV)/bin/dbt test --target dev
+
+# B-8.3 — G.4 — Exécute `dbt snapshot` sur tous les snapshots.
+dbt.snapshot: $(VENV)
+	@$(VENV)/bin/dbt snapshot --target dev
+
 # Démonstrateur end-to-end ingestion OWID CO2 (B-8.2).
 # Chaîne : install → db.up → db.migrate → dagster job execute.
 # Appelle .venv/bin/dagster (pas dagster nu) pour garantir l'isolation
@@ -45,6 +68,33 @@ db.show-schemas: install
 demo-ingest: db.migrate
 	@$(DAGSTER) job execute -m aporiapolis -j ingest_owid_climate
 	@echo "demo-ingest exit 0 — voir data/bronze/ et raw.owid_co2_emissions"
+
+.PHONY: demo-stage
+
+# B-8.3 — Démo complète bout-en-bout, déterministe.
+# Chaîne : install → db.up → db.migrate →
+#         dagster job execute ingest_owid_climate (B-8.2) →
+#         dbt run → dbt test → dbt snapshot (B-8.3).
+# Critère B-8.3 §5 : exit 0 sur env totalement frais.
+demo-stage: install db.up db.migrate
+	@$(DAGSTER) job execute -m aporiapolis -j ingest_owid_climate
+	@$(MAKE) dbt.run
+	@$(MAKE) dbt.test
+	@$(MAKE) dbt.snapshot
+	@echo "demo-stage: chain complete (raw → staging → marts → snapshot)"
+
+.PHONY: demo-stage-concurrency
+
+# B-8.3 — G.4 #48 — Preuve concurrency one-shot.
+# Appelle scripts/test_concurrency.sh qui :
+#  - lance 2 runs snapshot_indicateur_job daemon arrêté (QUEUED),
+#  - démarre daemon en background (trap pour cleanup),
+#  - attend que la queue soit vide,
+#  - prouve post-hoc le non-chevauchement des intervalles d'exécution.
+# Prérequis : `make demo-stage` doit avoir tourné au moins une fois
+# (mart peuplé).
+demo-stage-concurrency: $(VENV)
+	@bash scripts/test_concurrency.sh
 
 # Nettoyage local (utile pour tester env frais).
 # Ne supprime pas le .duckdb par défaut (préservation des données

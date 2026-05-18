@@ -1,0 +1,3 @@
+# dbt snapshot blocks require sqlfluff-templater-dbt, absent from current CI.
+dbt/snapshots/*.sql
+dbt/target/

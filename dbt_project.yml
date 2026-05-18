@@ -1,0 +1,38 @@
+# B-8.3 — G.3 #47 — Configuration projet dbt AporiaPolis
+#
+# Layout 2 niveaux (D2) : staging → marts. intermediate reste vide
+# en B-8.3 (P6 — pas d'abstraction avant 2e cas d'usage).
+#
+# ADR-0031 — DuckDB+parquet local MVP. Source of truth machine pour la
+# liste des modèles et snapshots.
+
+name: 'aporiapolis'
+version: '0.1.0'
+config-version: 2
+
+profile: 'aporiapolis'
+
+model-paths: ['dbt/models']
+analysis-paths: ['dbt/analyses']
+test-paths: ['dbt/tests']
+seed-paths: ['dbt/seeds']
+macro-paths: ['dbt/macros']
+snapshot-paths: ['dbt/snapshots']
+
+target-path: 'dbt/target'
+clean-targets:
+  - 'dbt/target'
+  - 'dbt_packages'
+
+models:
+  aporiapolis:
+    staging:
+      +materialized: view
+      +schema: staging
+    marts:
+      +materialized: table
+      +schema: marts
+
+snapshots:
+  aporiapolis:
+    +target_schema: audit_log

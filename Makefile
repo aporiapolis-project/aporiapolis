@@ -1,53 +1,54 @@
-# AporiaPolis — Makefile
-#
-# Cibles bootstrap local DuckDB. ADR-0031 stack hybride MVP local
-# (DuckDB+parquet) / prod (Postgres+Object Storage). Refs #45 [G.1].
-#
-# Prérequis : `uv` disponible sur le PATH. La cible db.up crée un
-# virtualenv local `.venv` et y installe `duckdb` à la demande.
-#
-# Tout exécute en Python inline pour rester homogène entre les envs
-# (pas de dépendance au CLI duckdb qui est packagé séparément du
-# module Python — duckdb-cli vs duckdb).
+# AporiaPolis — Makefile (B-8.2 v2.2)
+# Convention Python : uv + virtualenv repo-local .venv (pré-vol §36).
+# Source of truth des dépendances : pyproject.toml top-level.
+# Aucun pip install --user ni --break-system-packages.
 
-.PHONY: help db.up db.migrate db.show-schemas
+.PHONY: install db.up db.migrate db.show-schemas demo-ingest clean
 
-DUCKDB_PATH := data/duckdb/aporiapolis.duckdb
-MIGRATIONS_DIR := migrations
-PYTHON := .venv/bin/python
+VENV := .venv
+PYTHON := $(VENV)/bin/python
+DAGSTER := $(VENV)/bin/dagster
 
-help:
-	@echo "Cibles AporiaPolis MVP local :"
-	@echo "  make db.up           Crée data/duckdb/ et prépare .venv via uv"
-	@echo "  make db.migrate      Applique migrations/*.sql sur DuckDB"
-	@echo "  make db.show-schemas Liste les schémas DuckDB (diagnostic)"
+# Création du virtualenv via uv. Idempotent : uv venv ne recrée pas
+# si .venv existe déjà.
+$(VENV)/bin/python:
+	uv venv $(VENV)
 
-db.up:
-	@mkdir -p $(dir $(DUCKDB_PATH))
-	@if [ ! -x "$(PYTHON)" ]; then \
-		echo "Virtualenv absent — création via uv..."; \
-		uv venv .venv; \
-	fi
-	@if ! $(PYTHON) -c "import duckdb" 2>/dev/null; then \
-		echo "Module Python duckdb absent — installation..."; \
-		uv pip install --python "$(PYTHON)" duckdb \
-			|| (echo "Échec uv pip install duckdb dans .venv." \
-				&& echo "Vérifier la disponibilité réseau et la config uv." \
-				&& exit 1); \
-	fi
-	@echo "DuckDB ready ($(DUCKDB_PATH) + .venv)"
+# Installation editable depuis pyproject.toml. Cible cible commune
+# pour toutes les opérations qui ont besoin de duckdb / dagster /
+# pyarrow / requests / pyyaml.
+install: $(VENV)/bin/python
+	uv pip install -p $(PYTHON) -e .
 
-db.migrate:
-	@$(PYTHON) -c "import duckdb, glob, sys; \
-files = sorted(glob.glob('$(MIGRATIONS_DIR)/*.sql')); \
-conn = duckdb.connect('$(DUCKDB_PATH)'); \
-[conn.execute(open(f).read()) for f in files]; \
-conn.close(); \
-print(f'Applied {len(files)} migration(s) from $(MIGRATIONS_DIR)/')"
+# Préparation du dossier DuckDB local + sanity ping de la lib duckdb.
+# Dépend de install (B-8.2 v2.2 — retrait du double-install duckdb).
+db.up: install
+	@mkdir -p data/duckdb
+	@$(PYTHON) -c "import duckdb; con = duckdb.connect('data/duckdb/aporiapolis.duckdb'); con.close(); print('DuckDB ready (data/duckdb/aporiapolis.duckdb + .venv)')"
 
-db.show-schemas:
-	@$(PYTHON) -c "import duckdb; \
-conn = duckdb.connect('$(DUCKDB_PATH)'); \
-rows = conn.execute('SELECT schema_name FROM information_schema.schemata ORDER BY schema_name').fetchall(); \
-print('\n'.join(r[0] for r in rows)); \
-conn.close()"
+# Exécute toutes les migrations versionnées de migrations/*.sql dans
+# l'ordre lexicographique. Idempotent (les migrations utilisent
+# CREATE IF NOT EXISTS).
+db.migrate: install
+	@$(PYTHON) -c "import duckdb; from pathlib import Path; con = duckdb.connect('data/duckdb/aporiapolis.duckdb'); files = sorted(Path('migrations').glob('*.sql')); [con.execute(f.read_text()) for f in files]; con.close(); print(f'Applied {len(files)} migration(s) from migrations/')"
+
+# Liste les schémas DuckDB (utile pour la sanity check post-migrate).
+db.show-schemas: install
+	@$(PYTHON) -c "import duckdb; con = duckdb.connect('data/duckdb/aporiapolis.duckdb'); rows = con.execute('SELECT schema_name FROM information_schema.schemata ORDER BY schema_name').fetchall(); [print(r[0]) for r in rows]; con.close()"
+
+# Démonstrateur end-to-end ingestion OWID CO2 (B-8.2).
+# Chaîne : install → db.up → db.migrate → dagster job execute.
+# Appelle .venv/bin/dagster (pas dagster nu) pour garantir l'isolation
+# du virtualenv repo-local.
+# Test env frais attendu :
+#   rm -rf data/duckdb data/bronze .venv && make demo-ingest
+demo-ingest: db.migrate
+	@$(DAGSTER) job execute -m aporiapolis -j ingest_owid_climate
+	@echo "demo-ingest exit 0 — voir data/bronze/ et raw.owid_co2_emissions"
+
+# Nettoyage local (utile pour tester env frais).
+# Ne supprime pas le .duckdb par défaut (préservation des données
+# locales). Pour reset complet : rm -rf data/duckdb data/bronze .venv
+clean:
+	rm -rf .venv
+	@echo "clean — .venv supprimé. data/ préservé."

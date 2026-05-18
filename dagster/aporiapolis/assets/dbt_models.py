@@ -68,8 +68,7 @@ def _run_dbt(
         context.log.warning(result.stderr)
     if result.returncode != 0:
         raise RuntimeError(
-            f"dbt subprocess returned {result.returncode}. "
-            f"Cmd: {' '.join(cmd)}"
+            f"dbt subprocess returned {result.returncode}. Cmd: {' '.join(cmd)}"
         )
     return result
 

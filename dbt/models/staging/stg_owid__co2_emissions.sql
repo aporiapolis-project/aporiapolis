@@ -27,5 +27,6 @@ SELECT
     population,
     CAST('OWID/Global Carbon Budget 2024' AS VARCHAR) AS source
 FROM {{ source('raw', 'owid_co2_emissions') }}
-WHERE year IS NOT NULL
-  AND country IS NOT NULL
+WHERE
+    year IS NOT NULL
+    AND country IS NOT NULL

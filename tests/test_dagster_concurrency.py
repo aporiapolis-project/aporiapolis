@@ -51,14 +51,8 @@ def test_dagster_yaml_has_run_queue_and_tag_concurrency_limits() -> None:
     runs_concurrency = concurrency.get("runs") or {}
     limits = runs_concurrency.get("tag_concurrency_limits") or []
 
-    matching = [
-        lim
-        for lim in limits
-        if lim.get("key") == DBT_SNAPSHOT_TAG_KEY
-    ]
-    assert matching, (
-        f"tag_concurrency_limits key={DBT_SNAPSHOT_TAG_KEY!r} manquant."
-    )
+    matching = [lim for lim in limits if lim.get("key") == DBT_SNAPSHOT_TAG_KEY]
+    assert matching, f"tag_concurrency_limits key={DBT_SNAPSHOT_TAG_KEY!r} manquant."
     assert matching[0].get("limit") == 1, (
         f"limit attendu=1, observé={matching[0].get('limit')}"
     )
@@ -73,8 +67,7 @@ def test_snapshot_job_has_run_tags() -> None:
     job = defs.resolve_job_def("snapshot_indicateur_job")
     run_tags = dict(job.run_tags)
     assert run_tags == {DBT_SNAPSHOT_TAG_KEY: ""}, (
-        f"run_tags attendu={{{DBT_SNAPSHOT_TAG_KEY!r}: ''}}, "
-        f"observé={run_tags}"
+        f"run_tags attendu={{{DBT_SNAPSHOT_TAG_KEY!r}: ''}}, observé={run_tags}"
     )
     assert dict(job.tags) == {DBT_SNAPSHOT_TAG_KEY: ""}, (
         "Dagster 1.13.5 `dagster job launch` propage `tags` dans les "
@@ -99,9 +92,7 @@ def test_definitions_contain_dbt_assets() -> None:
     """Les 2 nouveaux assets sont enregistrés dans Definitions."""
     from aporiapolis import defs
 
-    asset_keys = {
-        str(k) for k in defs.resolve_asset_graph().get_all_asset_keys()
-    }
+    asset_keys = {str(k) for k in defs.resolve_asset_graph().get_all_asset_keys()}
     # On vérifie la présence des deux nouvelles clés sans figer le
     # format exact d'AssetKey (qui peut varier selon les versions
     # Dagster).

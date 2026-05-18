@@ -7,10 +7,12 @@
 # Si Postgres apparaît plus tard, ce fichier sera fallback-only via
 # .gitignore + profiles.example.yml (cf. doctrine B-8.1).
 #
-# ADR-0031 — DuckDB+parquet local MVP. Target unique 'dev'.
+# ADR-0031 — DuckDB+parquet local MVP. Target local 'dev'.
+# CI GitHub Actions garde le workflow existant dbt-postgres parse-only :
+# target 'ci' factice, sans connexion, uniquement pour parser le projet.
 
 aporiapolis:
-  target: dev
+  target: "{{ 'ci' if env_var('GITHUB_ACTIONS', 'false') == 'true' else 'dev' }}"
   outputs:
     dev:
       type: duckdb
@@ -18,3 +20,12 @@ aporiapolis:
       threads: 4
       extensions:
         - parquet
+    ci:
+      type: postgres
+      host: localhost
+      user: aporiapolis
+      password: aporiapolis
+      port: 5432
+      dbname: aporiapolis
+      schema: public
+      threads: 1

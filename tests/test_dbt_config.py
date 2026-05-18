@@ -12,7 +12,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
 import yaml
 
 
@@ -36,9 +35,12 @@ def test_dbt_profiles_yml_present_and_aligned() -> None:
     with path.open() as f:
         cfg = yaml.safe_load(f)
     assert "aporiapolis" in cfg
-    assert cfg["aporiapolis"].get("target") == "dev"
+    target = cfg["aporiapolis"].get("target")
+    assert target == "dev" or "GITHUB_ACTIONS" in target
     assert "dev" in cfg["aporiapolis"]["outputs"]
     assert cfg["aporiapolis"]["outputs"]["dev"]["type"] == "duckdb"
+    assert "ci" in cfg["aporiapolis"]["outputs"]
+    assert cfg["aporiapolis"]["outputs"]["ci"]["type"] == "postgres"
 
 
 def test_staging_model_present() -> None:
@@ -79,7 +81,7 @@ def test_snapshot_indicateur_present() -> None:
     path = REPO_ROOT / "dbt" / "snapshots" / "snapshot_indicateur.sql"
     assert path.exists(), f"{path} absent"
     content = path.read_text()
-    assert "strategy='check'" in content or "strategy=\"check\"" in content
+    assert "strategy='check'" in content or 'strategy="check"' in content
     assert "value" in content and "unit" in content and "source" in content
 
 

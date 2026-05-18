@@ -23,13 +23,14 @@
 SELECT
     CAST('fr-co2-total-annual' AS VARCHAR) AS slug,
     year,
-    CAST(co2 AS DOUBLE)                    AS value,
-    CAST('Mt CO2' AS VARCHAR)              AS unit,
+    CAST(co2 AS DOUBLE) AS value,  -- noqa: RF04
+    CAST('Mt CO2' AS VARCHAR) AS unit,
     source,
-    iso_code                                AS country_iso
+    iso_code AS country_iso
 FROM {{ ref('stg_owid__co2_emissions') }}
-WHERE country = 'France'
-  AND iso_code = 'FRA'
-  AND co2 IS NOT NULL
-  AND year IS NOT NULL
+WHERE
+    country = 'France'
+    AND iso_code = 'FRA'
+    AND co2 IS NOT NULL
+    AND year IS NOT NULL
 ORDER BY year

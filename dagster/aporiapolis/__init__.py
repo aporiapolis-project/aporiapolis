@@ -59,8 +59,7 @@ run_dbt_models_job = define_asset_job(
     name="run_dbt_models_job",
     selection=AssetSelection.assets(dbt_run_models),
     description=(
-        "Exécute dbt run sur tous les modèles staging + marts. "
-        "B-8.3 G.3 #47."
+        "Exécute dbt run sur tous les modèles staging + marts. B-8.3 G.3 #47."
     ),
 )
 

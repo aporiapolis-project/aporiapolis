@@ -1,0 +1,20 @@
+# B-8.3 — G.3 #47 — Profile dbt utilisé par defaults
+#
+# Copie quasi-identique de dbt/profiles.example.yml (B-8.1) avec le
+# nom de profile aligné sur dbt_project.yml (`profile: aporiapolis`).
+#
+# Versionné en clair : aucun secret en MVP DuckDB (path local figé).
+# Si Postgres apparaît plus tard, ce fichier sera fallback-only via
+# .gitignore + profiles.example.yml (cf. doctrine B-8.1).
+#
+# ADR-0031 — DuckDB+parquet local MVP. Target unique 'dev'.
+
+aporiapolis:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: data/duckdb/aporiapolis.duckdb
+      threads: 4
+      extensions:
+        - parquet

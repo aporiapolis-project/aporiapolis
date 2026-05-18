@@ -23,8 +23,11 @@ Le projet est **open source** (AGPL-3.0), **piloté publiquement** (issues, Proj
 - **Prod cible (V2+)** : Postgres + Object Storage (Scaleway),
   même surface applicative, migration sans réécriture grâce aux
   types SQL portables. Voir ADR-0031 et EPIC B (infrastructure).
-- **Ingestion** : Dagster orchestre les pipelines bronze → raw →
-  staging/marts via dbt.
+- **Ingestion** : Dagster orchestre les pipelines bronze → raw.
+- **Transformation** : dbt-duckdb matérialise le staging, les marts et
+  les snapshots dans DuckDB (`staging.stg_owid__co2_emissions`,
+  `marts.indicateur`, `audit_log.snapshot_indicateur` pour le slice
+  OWID B-8.3).
 - **DWH** : DuckDB en MVP local, Postgres managé Scaleway en prod cible,
   modélisation dimensionnelle avec SCD2 pour les positions partis et acteurs.
 - **API** : FastAPI publique read-only, OpenAPI 3.1 auto.
@@ -41,13 +44,13 @@ Le projet est **open source** (AGPL-3.0), **piloté publiquement** (issues, Proj
 - [ADR-0030 — Doctrine de release pre-MVP](docs/adr/0030-doctrine-release-pre-mvp.md) · `release-please` avec PR ouverte sur `main`, premier tag différé jusqu'au premier artefact MVP.
 - [ADR-0031 — Stratégie stockage MVP (DuckDB+parquet local / Postgres prod)](docs/adr/0031-strategie-stockage-mvp.md)
 - [ADR-0032 — Mode rendu CSR islands Svelte 5](docs/adr/0032-csr-islands-svelte5.md)
-- [ADR-0033 — Concurrency des dbt-snapshots dans Dagster](docs/adr/0033-concurrency-dbt-snapshots.md)
+- [ADR-0033 — Concurrency des dbt-snapshots dans Dagster](docs/adr/0033-concurrency-dbt-snapshots.md) · implémentée B-8.3 via `dagster.yaml` + job taggé `dagster/dbt_snapshot`.
 
 ## Démarrer
 
 Voir le [backlog](https://github.com/aporiapolis-project/aporiapolis/issues?q=is%3Aopen+label%3Aepic) pour suivre l'avancement.
 
-### Ingestion (état post-B-8.2)
+### Slice OWID E2E (état post-B-8.3)
 
 Premier pipeline d'ingestion implémenté : **OWID CO2 emissions**.
 
@@ -61,12 +64,28 @@ Premier pipeline d'ingestion implémenté : **OWID CO2 emissions**.
 - **Schedule déclaratif** `daily_ingest_owid` (02:00 UTC,
   `default_status=STOPPED`) — déclaratif, non actif sans
   `dagster-daemon` lancé.
+- **dbt staging** `staging.stg_owid__co2_emissions` : projection
+  contractuelle du raw OWID.
+- **dbt mart** `marts.indicateur` : contrat figé
+  `(slug, year, value, unit, source, country_iso)`, slug
+  `fr-co2-total-annual`, 217 lignes France 1802-2024 dans le snapshot
+  OWID courant.
+- **dbt snapshot** `audit_log.snapshot_indicateur` : strategy `check`
+  sur `value`, `unit`, `source`, sérialisé via la queue Dagster et le
+  tag `dagster/dbt_snapshot`.
 
-Démonstration end-to-end (env frais) :
+Démonstrations end-to-end (env frais) :
 
 ```bash
 rm -rf data/duckdb data/bronze .venv && make demo-ingest
+rm -rf data/duckdb data/bronze .venv && make demo-stage
+make demo-stage-concurrency
 ```
+
+`make demo-stage` rejoue ingestion → raw → dbt staging → dbt marts →
+dbt snapshot. `make demo-stage-concurrency` prouve en one-shot que
+deux runs `snapshot_indicateur_job` concurrents sont sérialisés par la
+limite de tag Dagster.
 
 Voir `docs/sources/owid.md` (source card humaine),
 `dagster/aporiapolis/config/sources/owid.yaml` (config machine),

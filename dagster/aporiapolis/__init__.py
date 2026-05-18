@@ -70,6 +70,7 @@ run_dbt_models_job = define_asset_job(
 snapshot_indicateur_job = define_asset_job(
     name="snapshot_indicateur_job",
     selection=AssetSelection.assets(dbt_snapshot_indicateur),
+    tags={DBT_SNAPSHOT_TAG_KEY: ""},
     run_tags={DBT_SNAPSHOT_TAG_KEY: ""},
     description=(
         "Exécute dbt snapshot_indicateur. Run tag "

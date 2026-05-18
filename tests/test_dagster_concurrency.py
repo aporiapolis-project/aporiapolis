@@ -76,6 +76,11 @@ def test_snapshot_job_has_run_tags() -> None:
         f"run_tags attendu={{{DBT_SNAPSHOT_TAG_KEY!r}: ''}}, "
         f"observé={run_tags}"
     )
+    assert dict(job.tags) == {DBT_SNAPSHOT_TAG_KEY: ""}, (
+        "Dagster 1.13.5 `dagster job launch` propage `tags` dans les "
+        f"runs ; attendu={{{DBT_SNAPSHOT_TAG_KEY!r}: ''}}, "
+        f"observé={dict(job.tags)}"
+    )
 
 
 def test_run_dbt_models_job_has_no_concurrency_tag() -> None:

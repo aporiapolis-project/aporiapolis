@@ -92,7 +92,17 @@ if [[ ! -x "$VENV_BIN/dagster" ]]; then
 fi
 
 # Vérification rapide que l'instance lit bien la queue.
-"$VENV_BIN/dagster" instance info | head -30
+# Ne pas piper directement vers `head` sous `set -o pipefail` :
+# `dagster instance info` peut recevoir SIGPIPE quand `head` ferme tôt.
+"$VENV_BIN/dagster" instance info > /tmp/aporiapolis-dagster-instance-info.txt
+sed -n '1,35p' /tmp/aporiapolis-dagster-instance-info.txt
+"$VENV_BIN/python" - <<'PYEOF'
+from dagster import DagsterInstance
+
+inst = DagsterInstance.get()
+print("run_coordinator_runtime:", type(inst.run_coordinator).__name__)
+print("run_queue_runtime:", inst.get_concurrency_config().run_queue_config)
+PYEOF
 
 # ------------------------------------------------------------------
 # Phase 2 — Lance 2 runs daemon ARRÊTÉ
@@ -106,9 +116,20 @@ LAUNCH_B=$("$VENV_BIN/dagster" job launch -m "$MODULE" -j "$JOB_NAME" 2>&1 | tee
 
 # Vérifier qu'au moins 2 runs sont en QUEUED.
 sleep 1
-QUEUED_COUNT=$("$VENV_BIN/dagster" run list \
-    --filter "status=QUEUED" 2>/dev/null \
-    | grep -c "$JOB_NAME" || true)
+QUEUED_COUNT=$("$VENV_BIN/python" - <<'PYEOF'
+from dagster import DagsterInstance
+from dagster._core.storage.dagster_run import DagsterRunStatus
+
+inst = DagsterInstance.get()
+runs = inst.get_runs(limit=100)
+print(sum(
+    1
+    for run in runs
+    if run.job_name == "snapshot_indicateur_job"
+    and run.status == DagsterRunStatus.QUEUED
+))
+PYEOF
+)
 echo "Runs en état QUEUED juste après launch : $QUEUED_COUNT"
 
 if [[ "$QUEUED_COUNT" -lt 2 ]]; then
@@ -122,7 +143,7 @@ fi
 echo ""
 echo "=== Phase 3 — Démarrer dagster-daemon en background ==="
 
-"$VENV_BIN/dagster-daemon" run > "$DAEMON_LOG_FILE" 2>&1 &
+"$VENV_BIN/dagster-daemon" run -m "$MODULE" -d "$REPO_ROOT" > "$DAEMON_LOG_FILE" 2>&1 &
 DAEMON_PID=$!
 echo "$DAEMON_PID" > "$DAEMON_PID_FILE"
 echo "daemon PID=$DAEMON_PID (log: $DAEMON_LOG_FILE)"
@@ -138,12 +159,22 @@ echo "=== Phase 4 — Attendre que la queue se vide ==="
 
 WAITED=0
 while [[ $WAITED -lt $QUEUE_TIMEOUT_SEC ]]; do
-    PENDING=$("$VENV_BIN/dagster" run list \
-        --filter "status=QUEUED" 2>/dev/null \
-        | grep -c "$JOB_NAME" || true)
-    RUNNING=$("$VENV_BIN/dagster" run list \
-        --filter "status=STARTED" 2>/dev/null \
-        | grep -c "$JOB_NAME" || true)
+    COUNTS=$("$VENV_BIN/python" - <<'PYEOF'
+from dagster import DagsterInstance
+from dagster._core.storage.dagster_run import DagsterRunStatus
+
+inst = DagsterInstance.get()
+runs = [r for r in inst.get_runs(limit=100) if r.job_name == "snapshot_indicateur_job"]
+queued = sum(1 for r in runs if r.status == DagsterRunStatus.QUEUED)
+running = sum(
+    1
+    for r in runs
+    if r.status in {DagsterRunStatus.STARTING, DagsterRunStatus.STARTED}
+)
+print(f"{queued} {running}")
+PYEOF
+)
+    read -r PENDING RUNNING <<< "$COUNTS"
     echo "[t=$WAITED s] QUEUED=$PENDING STARTED=$RUNNING"
     if [[ "$PENDING" -eq 0 ]] && [[ "$RUNNING" -eq 0 ]]; then
         echo "Queue vide après ${WAITED}s."
@@ -165,8 +196,8 @@ fi
 echo ""
 echo "=== Phase 5 — Lecture timestamps des 2 derniers runs ==="
 
-# Récupère les 2 runs les plus récents pour ce job en JSON.
-"$VENV_BIN/dagster" run list --limit 2 > /tmp/runs.txt
+# Récupère les runs les plus récents pour trace humaine.
+"$VENV_BIN/dagster" run list --limit 8 > /tmp/runs.txt
 cat /tmp/runs.txt
 
 # Preuve post-hoc en Python (plus robuste que grep).
@@ -185,26 +216,34 @@ except ImportError:
     sys.exit(1)
 
 inst = DagsterInstance.get()
-runs = inst.get_runs(limit=10)
-matching = [r for r in runs if r.job_name == "snapshot_indicateur_job"]
-matching.sort(key=lambda r: r.start_time or 0)
+records = inst.get_run_records(limit=50)
+matching = [
+    record
+    for record in records
+    if record.dagster_run.job_name == "snapshot_indicateur_job"
+]
+matching.sort(key=lambda record: record.create_timestamp)
 last_two = matching[-2:]
 
 if len(last_two) < 2:
     print(f"ERROR: only {len(last_two)} runs found for snapshot_indicateur_job", file=sys.stderr)
     sys.exit(1)
 
-a, b = last_two
+a_record, b_record = last_two
+a = a_record.dagster_run
+b = b_record.dagster_run
 print("Run A:")
 print(f"  run_id    : {a.run_id}")
 print(f"  status    : {a.status}")
-print(f"  start_time: {a.start_time}")
-print(f"  end_time  : {a.end_time}")
+print(f"  created_at: {a_record.create_timestamp}")
+print(f"  start_time: {a_record.start_time}")
+print(f"  end_time  : {a_record.end_time}")
 print("Run B:")
 print(f"  run_id    : {b.run_id}")
 print(f"  status    : {b.status}")
-print(f"  start_time: {b.start_time}")
-print(f"  end_time  : {b.end_time}")
+print(f"  created_at: {b_record.create_timestamp}")
+print(f"  start_time: {b_record.start_time}")
+print(f"  end_time  : {b_record.end_time}")
 
 # Vérification non-chevauchement post-hoc.
 errors = []
@@ -212,11 +251,12 @@ if str(a.status) != "DagsterRunStatus.SUCCESS":
     errors.append(f"Run A status={a.status}, attendu SUCCESS")
 if str(b.status) != "DagsterRunStatus.SUCCESS":
     errors.append(f"Run B status={b.status}, attendu SUCCESS")
-if a.end_time is None or b.start_time is None:
+if a_record.end_time is None or b_record.start_time is None:
     errors.append("Timestamps manquants — preuve impossible")
-elif b.start_time < a.end_time:
+elif b_record.start_time < a_record.end_time:
     errors.append(
-        f"CHEVAUCHEMENT : run B start={b.start_time} < run A end={a.end_time}. "
+        f"CHEVAUCHEMENT : run B start={b_record.start_time} < "
+        f"run A end={a_record.end_time}. "
         "tag_concurrency_limits NON respecté."
     )
 

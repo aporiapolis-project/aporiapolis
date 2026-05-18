@@ -26,7 +26,6 @@ from pathlib import Path
 from typing import Any, Mapping
 
 import duckdb
-import pyarrow as pa
 import pyarrow.csv as pa_csv
 import pyarrow.parquet as pq
 import requests

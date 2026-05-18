@@ -1,0 +1,33 @@
+# B-8.3 — G.4 #48 — Configuration d'instance Dagster AporiaPolis
+#
+# Premier dagster.yaml effectif du repo (B-8.2 a livré ADR-0033 sans
+# impl, B-8.3 ferme #48).
+#
+# Lu via env var DAGSTER_HOME (par défaut DAGSTER_HOME=$(CURDIR), cf.
+# Makefile D7).
+#
+# Deux blocs essentiels :
+#  1) run_queue — active le QueuedRunCoordinator par raccourci
+#     standard Dagster 1.13 (D9, plus propre qu'un alias module nu).
+#     Note d'exécution B-8.3 : Dagster 1.13.5 teste la présence via
+#     truthiness Python (`if config_value.get("run_queue")`), donc un
+#     mapping vide `{}` est lu mais n'instancie pas le coordinator.
+#     `dequeue_interval_seconds: 5` rend le bloc non vide et reste
+#     une cadence locale raisonnable pour la preuve one-shot.
+#  2) concurrency.runs.tag_concurrency_limits — applique la limite
+#     ADR-0033 sur le tag 'dagster/dbt_snapshot' (D9, SD1).
+#
+# Effet : tout run portant le run_tag 'dagster/dbt_snapshot' (cf.
+# define_asset_job dans aporiapolis/__init__.py) sera sérialisé
+# (limit=1) côté queue. Le daemon `dagster-daemon run` processe la
+# queue et applique la limite. Sans daemon, les runs lancés via
+# `dagster job launch` restent en état QUEUED.
+
+run_queue:
+  dequeue_interval_seconds: 5
+
+concurrency:
+  runs:
+    tag_concurrency_limits:
+      - key: "dagster/dbt_snapshot"
+        limit: 1

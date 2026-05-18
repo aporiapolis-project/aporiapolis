@@ -29,7 +29,7 @@ db.up: install
 # Exécute toutes les migrations versionnées de migrations/*.sql dans
 # l'ordre lexicographique. Idempotent (les migrations utilisent
 # CREATE IF NOT EXISTS).
-db.migrate: install
+db.migrate: db.up
 	@$(PYTHON) -c "import duckdb; from pathlib import Path; con = duckdb.connect('data/duckdb/aporiapolis.duckdb'); files = sorted(Path('migrations').glob('*.sql')); [con.execute(f.read_text()) for f in files]; con.close(); print(f'Applied {len(files)} migration(s) from migrations/')"
 
 # Liste les schémas DuckDB (utile pour la sanity check post-migrate).

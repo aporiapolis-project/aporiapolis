@@ -1,4 +1,4 @@
-"""AporiaPolis — Dagster Definitions (B-8.2).
+"""AporiaPolis — Dagster Definitions.
 
 Expose les assets, le job nommé ``ingest_owid_climate`` (acceptance G.2
 #46 verbatim) et le ``ScheduleDefinition`` quotidien 02:00 UTC (D5).
@@ -25,11 +25,16 @@ from dagster import (
     load_assets_from_modules,
 )
 
-from aporiapolis.assets import owid_co2_emissions
+from aporiapolis.assets import dbt_models, owid_co2_emissions
+from aporiapolis.assets.dbt_models import (
+    DBT_SNAPSHOT_TAG_KEY,
+    dbt_run_models,
+    dbt_snapshot_indicateur,
+)
 
 # Charge automatiquement tous les @asset déclarés dans le module
-# aporiapolis.assets.owid_co2_emissions.
-all_assets = load_assets_from_modules([owid_co2_emissions])
+# aporiapolis.assets.*.
+all_assets = load_assets_from_modules([owid_co2_emissions, dbt_models])
 
 # Job nommé requis par l'acceptance G.2 #46 verbatim.
 # Matérialise les 2 assets bronze + raw dans l'ordre topologique
@@ -45,6 +50,31 @@ ingest_owid_climate = define_asset_job(
         "bronze (download + parquet horodaté ADR-0031) → "
         "raw (TRUNCATE+INSERT DuckDB miroir ~70 colonnes). "
         "Acceptance G.2 #46."
+    ),
+)
+
+# B-8.3 — G.3 #47 — Job dbt run (staging + marts).
+# Aucun run_tag : ce job est libre de concurrence.
+run_dbt_models_job = define_asset_job(
+    name="run_dbt_models_job",
+    selection=AssetSelection.assets(dbt_run_models),
+    description=(
+        "Exécute dbt run sur tous les modèles staging + marts. "
+        "B-8.3 G.3 #47."
+    ),
+)
+
+# B-8.3 — G.4 #48 — Job dbt snapshot.
+# run_tag 'dagster/dbt_snapshot' figé verbatim ADR-0033 + dagster.yaml.
+# Sérialisé par tag_concurrency_limits (limit=1) côté instance queue.
+snapshot_indicateur_job = define_asset_job(
+    name="snapshot_indicateur_job",
+    selection=AssetSelection.assets(dbt_snapshot_indicateur),
+    run_tags={DBT_SNAPSHOT_TAG_KEY: ""},
+    description=(
+        "Exécute dbt snapshot_indicateur. Run tag "
+        f"{DBT_SNAPSHOT_TAG_KEY!r} pour sérialisation queue "
+        "(ADR-0033, dagster.yaml). B-8.3 G.4 #48."
     ),
 )
 
@@ -67,6 +97,10 @@ daily_ingest_owid = ScheduleDefinition(
 
 defs = Definitions(
     assets=all_assets,
-    jobs=[ingest_owid_climate],
+    jobs=[
+        ingest_owid_climate,
+        run_dbt_models_job,
+        snapshot_indicateur_job,
+    ],
     schedules=[daily_ingest_owid],
 )

@@ -152,6 +152,7 @@ dagster_home/
 history/
 schedules/
 storage/
+.telemetry/
 
 # --- Data / artifacts (jamais commit de données brutes) ---
 data/raw/

@@ -1,0 +1,45 @@
+version: 2
+
+# B-8.3 — G.3 #47 — Schéma marts dbt
+# Contrat figé indicateur.
+
+models:
+  - name: indicateur
+    description: |
+      Mart contractuel AporiaPolis — un mart, plusieurs slugs.
+      B-8.3 : un seul slug ('fr-co2-total-annual'), filtre France.
+      D6 — nom 'indicateur' générique pour accueillir slugs futurs.
+      Source: OWID (CC BY 4.0).
+    columns:
+      - name: slug
+        description: "Identifiant éditorial canonique (kebab-case). B-8 : 'fr-co2-total-annual'."
+        tests:
+          - not_null
+      - name: year
+        description: "Année (4 chiffres). Couverture France : 1750-2024."
+        tests:
+          - not_null
+      - name: value
+        description: "Valeur en unité indiquée par 'unit'. B-8 : émissions CO2 annuelles France en Mt."
+        tests:
+          - not_null
+      - name: unit
+        description: "Unité littérale. B-8 : 'Mt CO2' constant."
+        tests:
+          - not_null
+      - name: source
+        description: "Attribution OWID + Global Carbon Budget."
+        tests:
+          - not_null
+      - name: country_iso
+        description: "Code ISO-3 du pays. Nullable pour slugs agrégés futurs."
+        tests:
+          - relationships:
+              to: ref('stg_owid__co2_emissions')
+              field: iso_code
+              # Note: relationship dbt natif est unaire — vérifie l'existence
+              # de country_iso dans staging.iso_code uniquement.
+              # L'intégrité composite (country_iso, year) est garantie par
+              # construction (FILTER WHERE country='France' AND year IS NOT NULL).
+              # Test composite custom : dbt/tests/assert_indicateur_unique.sql.
+              # D8 — pas de dbt-utils pour un seul invariant composite (P6).
